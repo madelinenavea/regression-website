@@ -38,6 +38,9 @@ csv_plot_button.addEventListener('click', () => {
     const x = rows.map(r => +r[x_name]);
     const y = rows.map(r => +r[y_name]);
 
+    console.log("x:", x);
+    console.log("y:", y);
+
     const trace = {
       x: x,
       y: y,
