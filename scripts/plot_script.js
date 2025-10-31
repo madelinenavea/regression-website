@@ -15,6 +15,9 @@ function plotBestFitLine(x, y, divName, name) {
 	let slope = covariance(x, y, meanOfX, meanOfY) / variance(x, meanOfX);
 	let yInt = meanOfY - slope * meanOfX;
 
+	let maxX = Math.max(x);
+	console.log(maxX);
+
 	const bestFitLine = [{
 		x: [0, Math.max(x)],
 		y: [slope*0 + yInt, slope*(Math.max(x)) + yInt],
