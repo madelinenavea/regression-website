@@ -10,8 +10,7 @@ Plotly.d3.csv("../../data/Salary_dataset.csv", function(err, rows) {
   }
 
   const columns = Object.keys(rows[0]);
-  console.log("Columns:");
-  console.log(columns);
+  console.log("Columns:", columns);
 
   columns.forEach(col => {
     const xOpt = document.createElement("xOpt");
