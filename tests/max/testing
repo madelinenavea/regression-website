@@ -1,1 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	</head>
+	<body>
+		<h1>Plotly Testing</h1>
 
+		<!-- Tab links -->
+		<div class="tab">
+			<button class="tablinks" onclick="openCity(event, 'Plot')">Plot</button>
+			<button class="tablinks" onclick="openCity(event, 'Bar')">Bar</button>
+		</div>
+
+		<div id="plot-tester" class="tabcontent" style="width:600px;height:600px;"></div>
+		<div id="bar-tester" class="tabcontent"  style="width:600px;height:600px;"></div>
+
+		<script src="../scripts/tab_script.js"></script>
+		<script src="../scripts/plot_script.js"></script>
+		<script src="../scripts/bar_script.js"></script>
+	</body>
+</html>
