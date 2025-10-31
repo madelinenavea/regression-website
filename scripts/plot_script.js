@@ -20,8 +20,8 @@ function plotBestFitLine(x, y, divName, name) {
 	console.log(maxX, minX, x, y, meanOfX, meanOfY, slope, yInt);
 
 	const bestFitLine = [{
-		x: [0, Math.max(x)],
-		y: [slope*0 + yInt, slope*(Math.max(x)) + yInt],
+		x: [minX, maxX],
+		y: [slope*minX + yInt, slope*maxX + yInt],
 		type: 'scatter',
 		name: name
 	}];
