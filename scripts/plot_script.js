@@ -17,7 +17,7 @@ function plotBestFitLine(x, y, divName, name) {
 
 	let maxX = Math.max(x);
 	let minX = Math.min(x);
-	console.log(maxX, minX);
+	console.log(maxX, minX, x, y, meanOfX, meanOfY, slope, yInt);
 
 	const bestFitLine = [{
 		x: [0, Math.max(x)],
