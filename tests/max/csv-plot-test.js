@@ -1,4 +1,4 @@
-let csv-dropdown = document.getElementById("drop-down");
+let dropdown = document.getElementById("drop-down");
 
 Plotly.d3.csv("../../data/Salary_dataset.csv", function(err, rows) {
   if (err) {
