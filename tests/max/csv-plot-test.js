@@ -45,7 +45,7 @@ csv_plot_button.addEventListener('click', () => {
       x: x,
       y: y,
       type: "scatter",
-      mode: "lines+markers",
+      mode: "markers",
       marker: { color: "blue" }
     };
     const layout = {
