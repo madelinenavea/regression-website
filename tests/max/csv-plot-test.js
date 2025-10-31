@@ -13,12 +13,12 @@ Plotly.d3.csv("../../data/Salary_dataset.csv", function(err, rows) {
   console.log("Columns:", columns);
 
   columns.forEach(col => {
-    const xOpt = document.createElement("xOpt");
+    const xOpt = document.createElement("option");
     xOpt.text = col;
     xOpt.value = col;
     x_dropdown.add(xOpt);
 
-    const yOpt = document.createElement("yOpt");
+    const yOpt = document.createElement("option");
     yOpt.text = col;
     yOpt.value = col;
     y_dropdown.add(yOpt);
