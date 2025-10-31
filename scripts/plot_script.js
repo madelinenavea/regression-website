@@ -16,8 +16,8 @@ function plotBestFitLine(x, y, divName, name) {
 	let yInt = meanOfY - slope * meanOfX;
 
 	const bestFitLine = [{
-		x: [0, 90],
-		y: [m*0 + b, m*90 + b],
+		x: [0, Math.max(x)],
+		y: [slope*0 + yInt, slope*(Math.max(x)) + yInt],
 		type: 'scatter',
 		name: name
 	}];
