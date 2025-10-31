@@ -54,7 +54,7 @@ csv_plot_button.addEventListener('click', () => {
       yaxis: { title: y_name }
     };
 
-    Plotly.newPlot("plotDiv", trace, layout);
+    Plotly.newPlot("csv-plot-tester", trace, layout);
     
   });
 });
