@@ -14,7 +14,7 @@ Plotly.d3.csv("../../data/Salary_dataset.csv", function(err, rows) {
     const option = document.createElement("option");
     option.text = col;
     option.value = col;
-    dropdown.add(yOpt);
+    dropdown.add(option);
   });
 });
 
