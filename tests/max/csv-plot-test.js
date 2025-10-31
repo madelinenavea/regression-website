@@ -55,6 +55,8 @@ csv_plot_button.addEventListener('click', () => {
     };
 
     Plotly.newPlot("csv-plot-tester", [trace], layout);
+
+    plotBestFitLine(x, y, 'csv-plot-tester', 'best fit line');
     
   });
 });
