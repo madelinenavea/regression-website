@@ -16,7 +16,7 @@ Plotly.d3.csv("../../data/Salary_dataset.csv", function(err, rows) {
     const xOpt = document.createElement("xOpt");
     xOpt.text = col;
     xOpt.value = col;
-    x_dropdown.add(option);
+    x_dropdown.add(xOpt);
 
     const yOpt = document.createElement("yOpt");
     yOpt.text = col;
