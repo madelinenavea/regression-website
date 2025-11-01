@@ -1,0 +1,28 @@
+{
+  "name": "regression-website",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/madelinenavea/regression-website.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/madelinenavea/regression-website/issues"
+  },
+  "homepage": "https://github.com/madelinenavea/regression-website#readme",
+  "dependencies": {
+    "axios": "^1.13.1",
+    "express": "^5.1.0",
+    "multer": "^2.0.2"
+  }
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+	<h1>Plotly Testing</h1>
+
+	<!-- Tab links -->
+	<div class="tab">
+		<button class="tablinks" onclick="openCity(event, 'Plot')">Plot</button>
+		<button class="tablinks" onclick="openCity(event, 'Bar')">Bar</button>
+	</div>
+
+	<div id="plot-tester" class="tabcontent" style="width:600px;height:600px;"></div>
+	<div id="bar-tester" class="tabcontent" style="width:600px;height:600px;"></div>
+
+	<h1>Upload Testing</h1>
+	<form id="upload-form" method="POST" enctype="multipart/form-data">
+		<input type="file" name="uploadedFile" accept=".csv">
+		<input type="submit" value="Upload File">
+	</form>
+	<div id="upload-message"></div>
+
+	<script src="/tab_script.js"></script>
+	<script src="/plot_script.js"></script>
+	<script src="/bar_script.js"></script>
+	<script src="/upload.js"></script>
+
+</body>
+
+</html>
