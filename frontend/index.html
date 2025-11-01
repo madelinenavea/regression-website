@@ -1,22 +1,31 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-	</head>
-	<body>
-		<h1>Plotly Testing</h1>
 
-		<!-- Tab links -->
-		<div class="tab">
-			<button class="tablinks" onclick="openCity(event, 'Plot')">Plot</button>
-			<button class="tablinks" onclick="openCity(event, 'Bar')">Bar</button>
-		</div>
+<head>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
 
-		<div id="plot-tester" class="tabcontent" style="width:600px;height:600px;"></div>
-		<div id="bar-tester" class="tabcontent"  style="width:600px;height:600px;"></div>
+<body>
+	<h1>Plotly Testing</h1>
 
-		<script src="../scripts/tab_script.js"></script>
-		<script src="../scripts/plot_script.js"></script>
-		<script src="../scripts/bar_script.js"></script>
-	</body>
+	<!-- Tab links -->
+	<div class="tab">
+		<button class="tablinks" onclick="openCity(event, 'Plot')">Plot</button>
+		<button class="tablinks" onclick="openCity(event, 'Bar')">Bar</button>
+	</div>
+
+	<div id="plot-tester" class="tabcontent" style="width:600px;height:600px;"></div>
+	<div id="bar-tester" class="tabcontent" style="width:600px;height:600px;"></div>
+
+	<script src="../scripts/tab_script.js"></script>
+	<script src="../scripts/plot_script.js"></script>
+	<script src="../scripts/bar_script.js"></script>
+
+	<h1>Upload Testing</h1>
+	<form action="/upload" method="post" enctype="multipart/form-data">
+		<input type="file" name="uploadedFile" accept=".csv">
+		<input type="submit" value="Upload File">
+	</form>
+</body>
+
 </html>
