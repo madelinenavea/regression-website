@@ -1,6 +1,8 @@
 # regression-website
 
 A platform built specifically for conducting multiple linear regression analyses through a guided, interactive pipeline. This website will allow researchers, students, and analysts, etc., who need fast, accurate regression modeling without deep coding experience, to preprocess their data more easily. It will include built-in data validation, preprocessing assistance, and a regression selection interface, which ensures that users input clean, well-structured data before choosing their statistical model and generating visualizations.
+
+### For collaboration purposes:
 ```
 main/
 │
