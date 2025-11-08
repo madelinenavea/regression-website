@@ -98,33 +98,33 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
                 });
             });
 
-            // PHASE 2: DUPLICATE ROW DETECTION - FIXED VERSION
+            // NG - PHASE 2: DUPLICATE ROW DETECTION 
         rows.forEach((row, i) => {
-            // Clean and normalize the row data for accurate comparison
+            // NG: Clean and normalize the row data for accurate comparison
             let cleanRow = {};
             
             headers.forEach(col => {
                 let value = row[col];
                 
-                // Handle all types of empty/missing values consistently
+                // NG: Handle all types of empty/missing values consistently
                 if (value === null || value === undefined || value === '') {
                     cleanRow[col] = ''; // Standardize empty values
                 } else {
-                    // Trim whitespace and normalize string representation
+                    // NG: Trim whitespace and normalize string representation
                     cleanRow[col] = value.toString().trim();
                 }
             });
             
-            // Use normalized row for comparison
+            // NG: Use normalized row for comparison
             let rowString = JSON.stringify(cleanRow);
             
             if (seenRows.has(rowString)) {
-                // Found a duplicate - mark both the current and original row
+                // NG: Found a duplicate - mark both the current and original row
                 let originalRowNumber = seenRows.get(rowString);
-                duplicateRows.add(i + 2);        // Current row
-                duplicateRows.add(originalRowNumber); // Original row
+                duplicateRows.add(i + 2);        
+                duplicateRows.add(originalRowNumber); 
             } else {
-                // New unique row - store for future comparison
+                // NG: New unique row - store for future comparison
                 seenRows.set(rowString, i + 2);
             }
         });
