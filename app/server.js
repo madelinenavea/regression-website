@@ -98,36 +98,20 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
                 });
             });
 
-            // NG - PHASE 2: DUPLICATE ROW DETECTION 
-        rows.forEach((row, i) => {
-            // NG: Clean and normalize the row data for accurate comparison
-            let cleanRow = {};
-            
-            headers.forEach(col => {
-                let value = row[col];
-                
-                // NG: Handle all types of empty/missing values consistently
-                if (value === null || value === undefined || value === '') {
-                    cleanRow[col] = ''; // Standardize empty values
+            // NG - PHASE 2: DUPLICATE ROW DETECTION
+            // NG: Identify completely identical rows in the dataset
+            rows.forEach((row, i) => {
+                // NG: Convert each row object to JSON string for easy comparison
+                let rowString = JSON.stringify(row);
+                if (seenRows.has(rowString)) {
+                    // NG: If this row string was seen before, mark both occurrences as duplicates
+                    duplicateRows.add(i + 2);  
+                    duplicateRows.add(seenRows.get(rowString)); 
                 } else {
-                    // NG: Trim whitespace and normalize string representation
-                    cleanRow[col] = value.toString().trim();
+                    // NG: If this is a new unique row, store it for future comparison
+                    seenRows.set(rowString, i + 2);
                 }
             });
-            
-            // NG: Use normalized row for comparison
-            let rowString = JSON.stringify(cleanRow);
-            
-            if (seenRows.has(rowString)) {
-                // NG: Found a duplicate - mark both the current and original row
-                let originalRowNumber = seenRows.get(rowString);
-                duplicateRows.add(i + 2);        
-                duplicateRows.add(originalRowNumber); 
-            } else {
-                // NG: New unique row - store for future comparison
-                seenRows.set(rowString, i + 2);
-            }
-        });
 
             // NG: Send comprehensive analysis results back to client as JSON
             res.json({
