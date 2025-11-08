@@ -1,33 +1,65 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <style>
-    body { display: flex; font-family: Arial; }
-    #left-panel { width: 300px; padding: 20px; border-right: 1px solid #ccc; }
-    #right-panel { flex: 1; padding: 20px; }
-    .field-row { margin-bottom: 10px; }
-    .field-row select, .field-row input { width: 100%; }
-    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+    body {
+      display: flex;
+      font-family: Arial;
+    }
+
+    #left-panel {
+      width: 300px;
+      padding: 20px;
+      border-right: 1px solid #ccc;
+    }
+
+    #right-panel {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .field-row {
+      margin-bottom: 10px;
+    }
+
+    .field-row select,
+    .field-row input {
+      width: 100%;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid black;
+      border-collapse: collapse;
+      padding: 5px;
+    }
   </style>
 </head>
+
 <body>
 
   <div id="left-panel">
     <h3>Upload CSV</h3>
-    <input type="file" id="csv-file" accept=".csv"><br><br>
+    < <form id="upload-form" method="POST" enctype="multipart/form-data">
+      <input type="file" name="uploadedFile" accept=".csv">
+      <input type="submit" value="Upload File">
+      </form>
+      <div id="upload-message"></div>
 
-    <div id="columns-container"></div>
+      <div id="columns-container"></div>
 
-    <button id="verify-btn">Verify Data Types</button>
-	
-	<div id="boolean-panel" style="margin-top: 20px; display: none;">
-		<h4>Boolean Columns Conversion</h4>
-    	<div id="boolean-columns-container"></div>
-    	<button id="apply-boolean-btn">Apply Boolean Conversion</button>
-	</div>
+      <button id="verify-btn">Verify Data Types</button>
 
-	<div id="verification-result"></div>
-	</div>
+      <div id="boolean-panel" style="margin-top: 20px; display: none;">
+        <h4>Boolean Columns Conversion</h4>
+        <div id="boolean-columns-container"></div>
+        <button id="apply-boolean-btn">Apply Boolean Conversion</button>
+      </div>
+
+      <div id="verification-result"></div>
+  </div>
 
   <div id="right-panel">
     <h3>CSV Data</h3>
@@ -36,5 +68,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="scripts/preprocessing.js"></script>
+  <script src="scripts/upload.js"></script>
 </body>
+
 </html>
