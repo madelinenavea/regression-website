@@ -39,6 +39,21 @@ function displayAnalysisResults(result) {
             <p><strong>File Summary:</strong> ${result.totalRows} rows, ${result.totalColumns} columns</p>
     `;
 
+    // NS: Follows Nicko's formatting but without emojis because I am not in middle school
+    if (result.columnValidation && !result.columnValidation.isValid) {
+        html += `
+            <div style="color: red; margin: 10px 0;">
+                <h4> Column Validation Failed</h4>
+                <ul>
+                    ${result.columnValidation.issues.map(issue => `<li>${issue}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+    else if (result.columnValidation && result.columnValidation.isValid) {
+        html += `<p style="color: green;">Column headers are valid</p>`;
+    }
+
     // NG - SECTION 1: MISSING DATA ANALYSIS
     // NG: Check if any missing data was found in the CSV
     if (result.missingData.total > 0) {
