@@ -46,32 +46,70 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
     console.log("Uploaded file:", req.file.originalname);
 
     // NG: Initialize arrays to store CSV data during processing
-    let rows = [];      
-    let headers = [];   
+    let rows = [];
+    let headers = [];
+    let columnIssues = [];
 
     // NG: Create a stream to read the uploaded file efficiently (handles large files without loading entire file into memory)
     fs.createReadStream(req.file.path)
         // NG: Pipe the file stream through the CSV parser, treating first row as column headers
-        .pipe(csv.parse({ headers: true }))
-        
+        // NS: Modified Nicko's original process in order to validate the headers and columns
+        .pipe(csv.parse({ headers: false, ignoreEmpty: true }))
+
         // NG - Error handling: if CSV parsing fails, send error response to client
         .on("error", (error) => {
             console.error(error);
             res.status(500).json({ error: "Error reading CSV" });
         })
-        
+
+        // NS - I modified Nicko's original process to validate the headers and columns
+        .on("data", (row) => {
+            if (headers.length === 0) {
+                headers = row.map((h) => (h ? h.trim() : ""));
+                let duplicates = headers.filter(
+                    (h, i) => h && headers.indexOf(h) !== i
+                );
+                headers.forEach((h, i) => {
+                    if (!h) {
+                        columnIssues.push(`Column ${i + 1} is empty.`);
+                    }
+                    else if (/^\d+$/.test(h)) {
+                        columnIssues.push(`Column ${i + 1} is an invalid header.`)
+                    }
+                });
+                if (duplicates.length > 0) {
+                    columnIssues.push(`Duplicate column names found: ${[...new Set(duplicates)].join(", ")}`);
+                }
+            }
+            else {
+                rows.push(row);
+            }
+        })
+
         // NG - Event: Capture column headers when they are parsed from the first row
         .on("headers", (parsedHeaders) => {
             headers = parsedHeaders;
         })
-        
-        // NG - Event: For each data row parsed, add it to the rows array
-        .on("data", (row) => rows.push(row))
-        
+
         // NG - Event: When CSV parsing is complete, process the data and send analysis results
         .on("end", () => {
             // NG - Clean up: Delete the uploaded temporary file to free disk space
             fs.unlinkSync(req.file.path);
+
+            // NS: follows Nicko's json format to break early if errors are found
+            if (columnIssues.length > 0) {
+                return res.json({
+                    fileName: req.file.originalname,
+                    columnValidation: {
+                        isValid: false,
+                        issues: columnIssues
+                    },
+                    summary: {
+                        hasErrors: true,
+                        errorCount: columnIssues.length
+                    }
+                });
+            }
 
             // NG - Validation: Check if CSV contains any data rows (not just headers)
             if (rows.length === 0) {
@@ -79,9 +117,9 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
             }
 
             // NG: Initialize data structures for analysis
-            let missingLocations = [];  
-            let seenRows = new Map();   
-            let duplicateRows = new Set(); 
+            let missingLocations = [];
+            let seenRows = new Map();
+            let duplicateRows = new Set();
 
             // NG - PHASE 1: MISSING DATA DETECTION
             // NG: Iterate through each row and each column to find empty cells
@@ -89,7 +127,7 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
                 headers.forEach((col) => {
                     // NG: Check if cell value is empty, null, or undefined
                     if (row[col] === "" || row[col] === null || row[col] === undefined) {
-                        missingLocations.push({ 
+                        missingLocations.push({
                             row: i + 2,  // NG: Convert 0-based index to 1-based, +2 accounts for header row and 0-to-1 conversion
                             column: col,  // NG: Column name where missing data was found
                             value: row[col]  // NG: The actual missing value (empty string, null, etc.)
@@ -105,8 +143,8 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
                 let rowString = JSON.stringify(row);
                 if (seenRows.has(rowString)) {
                     // NG: If this row string was seen before, mark both occurrences as duplicates
-                    duplicateRows.add(i + 2);  
-                    duplicateRows.add(seenRows.get(rowString)); 
+                    duplicateRows.add(i + 2);
+                    duplicateRows.add(seenRows.get(rowString));
                 } else {
                     // NG: If this is a new unique row, store it for future comparison
                     seenRows.set(rowString, i + 2);
@@ -115,27 +153,33 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
 
             // NG: Send comprehensive analysis results back to client as JSON
             res.json({
-                fileName: req.file.originalname,  
-                totalRows: rows.length,           
-                totalColumns: headers.length,     
-                headers: headers,                 
-                
+                fileName: req.file.originalname,
+                totalRows: rows.length,
+                totalColumns: headers.length,
+                headers: headers,
+
+                // NS: Column validation results
+                columnValidation: {
+                    isValid: true,
+                    issues: []
+                },
+
                 // NG: Missing data analysis results
                 missingData: {
-                    total: missingLocations.length,           
-                    locations: missingLocations              
+                    total: missingLocations.length,
+                    locations: missingLocations
                 },
-                
+
                 // NG: Duplicate data analysis results
                 duplicateData: {
-                    total: duplicateRows.size,               
-                    rows: Array.from(duplicateRows).sort((a, b) => a - b)  
+                    total: duplicateRows.size,
+                    rows: Array.from(duplicateRows).sort((a, b) => a - b)
                 },
-                
+
                 // NG: Overall data quality summary
                 summary: {
-                    hasErrors: missingLocations.length > 0 || duplicateRows.size > 0,  
-                    errorCount: missingLocations.length + duplicateRows.size          
+                    hasErrors: missingLocations.length > 0 || duplicateRows.size > 0,
+                    errorCount: missingLocations.length + duplicateRows.size + columnIssues.length
                 }
             });
         });

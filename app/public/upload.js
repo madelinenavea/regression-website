@@ -1,6 +1,7 @@
 let form = document.getElementById('upload-form');
 let message = document.getElementById('upload-message');
 
+// Handles the actual uploading of the .csv file
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     let data = new FormData(form);
@@ -12,7 +13,7 @@ form.addEventListener('submit', async (e) => {
             method: 'POST',
             body: data
         });
-        
+
         if (response.ok) {
             let result = await response.json();
             displayAnalysisResults(result);
@@ -27,6 +28,8 @@ form.addEventListener('submit', async (e) => {
         message.textContent = "Error Uploading File";
     }
 });
+
+//Handles the validating of the .csv files that have been uploaded
 // NG: Function to display CSV analysis results in a user-friendly HTML format
 function displayAnalysisResults(result) {
     // NG: Start building the HTML structure for the analysis report
