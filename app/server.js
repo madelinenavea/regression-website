@@ -116,6 +116,15 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
                 return res.status(400).json({ error: "Empty file or invalid CSV format" });
             }
 
+            // NS: I needed to remap the rows to objects since I broke the pipeline for header validation
+            let parsedRows = rows.map((rowArr) => {
+                let obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = rowArr[index];
+                });
+                return obj;
+            })
+
             // NG: Initialize data structures for analysis
             let missingLocations = [];
             let seenRows = new Map();
@@ -123,7 +132,7 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
 
             // NG - PHASE 1: MISSING DATA DETECTION
             // NG: Iterate through each row and each column to find empty cells
-            rows.forEach((row, i) => {
+            parsedRows.forEach((row, i) => {
                 headers.forEach((col) => {
                     // NG: Check if cell value is empty, null, or undefined
                     if (row[col] === "" || row[col] === null || row[col] === undefined) {
@@ -138,7 +147,7 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
 
             // NG - PHASE 2: DUPLICATE ROW DETECTION
             // NG: Identify completely identical rows in the dataset
-            rows.forEach((row, i) => {
+            parsedRows.forEach((row, i) => {
                 // NG: Convert each row object to JSON string for easy comparison
                 let rowString = JSON.stringify(row);
                 if (seenRows.has(rowString)) {
@@ -154,7 +163,7 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
             // NG: Send comprehensive analysis results back to client as JSON
             res.json({
                 fileName: req.file.originalname,
-                totalRows: rows.length,
+                totalRows: parsedRows.length,
                 totalColumns: headers.length,
                 headers: headers,
 
