@@ -1,23 +1,32 @@
-function openPlot(evt, plotName) {
-  // Declare all variables
-  let i, tabcontent, tablinks;
-
-  // Get all elements with class="tabcontent" and hide them
-  tabcontent = document.getElementsByClassName("tabcontent");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
-
-  // Get all elements with class="tablinks" and remove the class "active"
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-
-  // Show the current tab, and add an "active" class to the button that opened the tab
-  document.getElementById(plotName).style.display = "block";
-  evt.currentTarget.className += " active";
-}
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelector(".tablinks").click();
+
+    // OUTER TABS
+    const outerTabs = document.querySelectorAll(".outer-tab");
+    const outerPanels = document.querySelectorAll(".tab-panel");
+
+    outerTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            outerTabs.forEach(t => t.classList.remove("active"));
+            outerPanels.forEach(p => p.classList.remove("active"));
+
+            tab.classList.add("active");
+            document.getElementById(tab.dataset.target).classList.add("active");
+        });
+    });
+
+    // INNER TABS
+    const innerTabs = document.querySelectorAll(".inner-tab");
+    const innerPanels = document.querySelectorAll(".inner-panel");
+
+    innerTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            const parent = tab.closest("#bar-panel");
+            parent.querySelectorAll(".inner-tab").forEach(t => t.classList.remove("active"));
+            parent.querySelectorAll(".inner-panel").forEach(p => p.classList.remove("active"));
+
+            tab.classList.add("active");
+            document.getElementById(tab.dataset.target).classList.add("active");
+        });
+    });
+
 });

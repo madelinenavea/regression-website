@@ -8,7 +8,7 @@ let app = express();
 let port = 3000;
 let hostname = "localhost";
 
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 let upload = multer({ dest: "uploads/" });
 
 app.get('/', (req, res) => {
@@ -35,6 +35,17 @@ app.get('/upload.js', (req, res) => {
     // Send the upload.js file to the client when requested
     res.sendFile(path.join(__dirname, 'public', 'upload.js'));
     console.log("Sent Upload Script");
+});
+
+app.get('/csv-plot-test.js', (req, res) => {
+    // Send the upload.js file to the client when requested
+    res.sendFile(path.join(__dirname, 'public', 'csv-plot-test.js'));
+    console.log("Sent Upload Script");
+});
+
+app.get('/Walmart_Sales.csv', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'data', 'Walmart_Sales.csv'));
+    console.log("Sent Walmart File");
 });
 
 app.post("/upload", upload.single("uploadedFile"), (req, res) => {

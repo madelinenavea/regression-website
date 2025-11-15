@@ -2,33 +2,101 @@
 <html>
 
 <head>
-	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 
 <body>
-	<h1>Plotly Testing</h1>
 
-	<!-- Tab links -->
-	<div class="tab">
-		<button class="tablinks" onclick="openCity(event, 'Plot')">Plot</button>
-		<button class="tablinks" onclick="openCity(event, 'Bar')">Bar</button>
-	</div>
+<h1>Plotting</h1>
 
-	<div id="plot-tester" class="tabcontent" style="width:600px;height:600px;"></div>
-	<div id="bar-tester" class="tabcontent" style="width:600px;height:600px;"></div>
+<!-- OUTER TABS -->
+<div class="tabs" id="outer-tabs">
+    <button class="outer-tab active" data-target="bar-panel">Bar</button>
+    <button class="outer-tab" data-target="plot-panel">Plot</button>
+</div>
 
-	<h1>Upload Testing</h1>
-	<form id="upload-form" method="POST" enctype="multipart/form-data">
-		<input type="file" name="uploadedFile" accept=".csv">
-		<input type="submit" value="Upload File">
-	</form>
-	<div id="upload-message"></div>
+<!-- OUTER TAB CONTENT 1: BAR PANEL -->
+<div id="bar-panel" class="tab-panel active">
 
-	<script src="/tab_script.js"></script>
-	<script src="/plot_script.js"></script>
-	<script src="/bar_script.js"></script>
-	<script src="/upload.js"></script>
+    <!-- INNER TABS -->
+    <div class="tabs" id="inner-tabs-bar">
+        <button class="inner-tab active" data-target="auto-bar">Auto 1 List</button>
+        <button class="inner-tab" data-target="custom-bar">Custom Categorical</button>
+    </div>
+
+    <!-- AUTO BAR -->
+    <div id="auto-bar" class="inner-panel active" style="width:600px;height:600px;">
+        <label for="column-name">Column</label>
+		<select id="column-name"></select>
+	    <button id="auto-bar-plot-button">Plot</button>
+
+    </div>
+
+    <!-- CATEGORICAL BAR -->
+    <div id="custom-bar" class="inner-panel" style="width:600px;height:600px;">
+        <label for="x-axis-bar">X Axis</label>
+        <select id="x-axis-bar"></select>
+
+        <label for="y-axis-bar">Y Axis</label>
+        <select id="y-axis-bar"></select>
+	    <button id="custom-bar-plot-button">Plot</button>
+
+    </div>
+
+</div>
+
+
+<!-- OUTER TAB CONTENT 2: PLOT PANEL -->
+<div id="plot-panel" class="tab-panel", style="width:600px;height:600px;">
+
+    <label for="x-axis-plot">X Axis</label>
+    <select id="x-axis-plot"></select>
+
+    <label for="y-axis-plot">Y Axis</label>
+    <select id="y-axis-plot"></select>
+
+    <button id="plot-plot-button">Plot</button>
+
+</div>
+
+<!-- UPLOAD TESTING SECTION -->
+<h1>Upload Testing</h1>
+
+<form id="upload-form" method="POST" enctype="multipart/form-data">
+    <input type="file" name="uploadedFile" accept=".csv">
+    <input type="submit" value="Upload File">
+</form>
+
+<div id="upload-message"></div>
+
+
+<style>
+    .tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+    .tabs button {
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+    .active {
+        background-color: #ccc;
+    }
+    .tab-panel,
+    .inner-panel {
+        display: none;
+    }
+    .tab-panel.active,
+    .inner-panel.active {
+        display: block;
+    }
+</style>
+
+<script src="/tab_script.js"></script>
+<script src="/plot_script.js"></script>
+<script src="/bar_script.js"></script>
+<script src="/upload.js"></script>
 
 </body>
-
 </html>
