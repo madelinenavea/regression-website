@@ -31,7 +31,7 @@ function plotBestFitLine(x, y, divName, name) {
 
 let x_dropdown = document.getElementById("x-axis-plot");
 let y_dropdown = document.getElementById("y-axis-plot");
-let csv_plot_button = document.getElementById("plot-button");
+let csv_plot_button = document.getElementById("plot-plot-button");
 
 let data_file = "/data/Walmart_Sales.csv";
 
