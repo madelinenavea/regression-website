@@ -229,63 +229,90 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
 });
 
 
-// NG: Outlier detection strategies
+// NG: Outlier detection strategies - Statistical methods for identifying unusual data points
 const outlierStrategies = {
-  // Z-score method for normally distributed data
+  // Z-score method: Best for normally distributed data
+  // Measures how many standard deviations a value is from the mean
   zScore: (data, column, threshold = 2.5) => {
+    // Extract and parse numeric values from the specified column, filtering out non-numeric values
     const values = data.map(row => parseFloat(row[column])).filter(val => !isNaN(val));
+
+    // Return early if no valid numeric values found
     if (values.length === 0) return { outliers: [], cleanedData: data };
 
+    // Calculate mean (average) of all values
     const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+
+    // Calculate standard deviation - measures spread/dispersion of data
     const stdDev = Math.sqrt(values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length);
 
+    // If all values are identical (stdDev = 0), no outliers can be detected
     if (stdDev === 0) return { outliers: [], cleanedData: data };
 
     const outliers = [];
+    // Process each row to identify and handle outliers
     const cleanedData = data.map((row, index) => {
       const value = parseFloat(row[column]);
+
+      // Only process valid numeric values
       if (!isNaN(value)) {
+        // Calculate Z-score: (value - mean) / standard deviation
         const zScore = Math.abs((value - mean) / stdDev);
+
+        // If Z-score exceeds threshold, mark as outlier
         if (zScore > threshold) {
           outliers.push({
-            row: index + 2,
+            row: index + 2, // +2 accounts for header row and 0-to-1 based conversion
             value,
-            zScore: zScore.toFixed(2),
+            zScore: zScore.toFixed(2), // Round to 2 decimal places for readability
             column,
             method: `Z-Score (threshold: ${threshold})`
           });
-          return { ...row, [column]: null }; // Replace outlier with null
+          // Replace outlier value with null in cleaned data
+          return { ...row, [column]: null };
         }
       }
+      // Return unchanged row if no outlier detected
       return row;
     });
 
     return { outliers, cleanedData };
   },
 
-  // IQR method for skewed data
+  // IQR (Interquartile Range) method: Robust method for skewed data distributions
+  // Uses quartiles to identify values outside typical range
   iqr: (data, column) => {
+    // Extract, parse, and sort numeric values in ascending order
     const values = data.map(row => parseFloat(row[column])).filter(val => !isNaN(val)).sort((a, b) => a - b);
+
     if (values.length === 0) return { outliers: [], cleanedData: data };
 
+    // Calculate first quartile (25th percentile) - median of lower half
     const q1 = values[Math.floor(values.length * 0.25)];
+    // Calculate third quartile (75th percentile) - median of upper half
     const q3 = values[Math.floor(values.length * 0.75)];
+    // Interquartile Range - range containing middle 50% of data
     const iqr = q3 - q1;
+
+    // Calculate outlier boundaries: 1.5×IQR from quartiles (Tukey's fences)
     const lowerBound = q1 - 1.5 * iqr;
     const upperBound = q3 + 1.5 * iqr;
 
     const outliers = [];
     const cleanedData = data.map((row, index) => {
       const value = parseFloat(row[column]);
+
       if (!isNaN(value)) {
+        // Check if value falls outside the acceptable range
         if (value < lowerBound || value > upperBound) {
           outliers.push({
             row: index + 2,
             value,
-            bounds: { lower: lowerBound, upper: upperBound },
+            bounds: { lower: lowerBound, upper: upperBound }, // Store bounds for reference
             column,
             method: 'IQR (Interquartile Range)'
           });
+          // Remove outlier by setting to null
           return { ...row, [column]: null };
         }
       }
@@ -295,28 +322,39 @@ const outlierStrategies = {
     return { outliers, cleanedData };
   },
 
-  // Winsorization - cap outliers instead of removing
+  // Winsorization: Conservative method that caps outliers instead of removing them
+  // Preserves data points while reducing extreme value influence
   winsorize: (data, column, percentile = 5) => {
+    // Extract, parse, and sort numeric values
     const values = data.map(row => parseFloat(row[column])).filter(val => !isNaN(val)).sort((a, b) => a - b);
+
     if (values.length === 0) return { outliers: [], cleanedData: data };
 
+    // Calculate lower bound (i.e., 5th percentile)
     const lowerBound = values[Math.floor(values.length * (percentile / 100))];
+    // Calculate upper bound (i.e., 95th percentile)
     const upperBound = values[Math.floor(values.length * ((100 - percentile) / 100))];
 
     const outliers = [];
     const cleanedData = data.map((row, index) => {
       const value = parseFloat(row[column]);
+
       if (!isNaN(value)) {
+        // Check if value is outside the acceptable percentile range
         if (value < lowerBound || value > upperBound) {
+          // Cap the value to the nearest bound instead of removing it
+          const correctedValue = value < lowerBound ? lowerBound : upperBound;
+
           outliers.push({
             row: index + 2,
-            originalValue: value,
-            correctedValue: value < lowerBound ? lowerBound : upperBound,
+            originalValue: value, // Store original for comparison
+            correctedValue, // Store the capped value
             bounds: { lower: lowerBound, upper: upperBound },
             column,
             method: `Winsorization (${percentile}%)`
           });
-          return { ...row, [column]: value < lowerBound ? lowerBound : upperBound };
+          // Replace extreme value with capped value
+          return { ...row, [column]: correctedValue };
         }
       }
       return row;
@@ -326,8 +364,10 @@ const outlierStrategies = {
   }
 };
 
-// NG: Route to detect outliers in all numeric columns
+// NG: Route to detect outliers in all numeric columns of uploaded CSV
+// This provides a comprehensive analysis of the entire dataset
 app.post("/detect-outliers", upload.single("uploadedFile"), (req, res) => {
+  // Validate that a file was uploaded
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
   }
@@ -335,54 +375,65 @@ app.post("/detect-outliers", upload.single("uploadedFile"), (req, res) => {
   let rows = [];
   let headers = [];
 
+  // Stream the uploaded file for efficient memory usage with large files
   fs.createReadStream(req.file.path)
-    .pipe(csv.parse({ headers: false, ignoreEmpty: true }))
+    .pipe(csv.parse({ headers: false, ignoreEmpty: true })) // Parse CSV without treating first row as headers yet
     .on("error", (error) => {
       console.error(error);
       res.status(500).json({ error: "Error reading CSV" });
     })
     .on("data", (row) => {
+      // First row contains column headers
       if (headers.length === 0) {
         headers = row.map((h) => (h ? h.trim() : ""));
       } else {
+        // Subsequent rows contain data
         rows.push(row);
       }
     })
     .on("end", () => {
+      // Clean up: delete the temporary uploaded file
       fs.unlinkSync(req.file.path);
 
+      // Validate that CSV contains data rows
       if (rows.length === 0) {
         return res.status(400).json({ error: "Empty file or invalid CSV format" });
       }
 
-      // Convert to object format
+      // Convert array based rows to object format for easier column access
       let parsedRows = rows.map((rowArr) => {
         let obj = {};
         headers.forEach((header, index) => {
-          obj[header] = rowArr[index];
+          obj[header] = rowArr[index]; // Create key-value pairs: {columnName: value}
         });
         return obj;
       });
 
-      // Identify numeric columns
+      // Identify numeric columns by sampling first 10 rows
       const numericColumns = headers.filter(header => {
         const sampleValues = parsedRows.slice(0, 10).map(row => row[header]);
+        // Count how many values in the sample are valid numbers
         const numericCount = sampleValues.filter(val => {
           const num = parseFloat(val);
           return !isNaN(num) && val !== null && val !== undefined && val !== '';
         }).length;
-        return numericCount >= 3; // Consider column numeric if at least 3 of first 10 values are numeric
+        // Consider column numeric if at least 3 of first 10 values are numeric
+        return numericCount >= 3;
       });
 
-      // Detect outliers in each numeric column using IQR method (most robust)
+      // Detect outliers in each numeric column using IQR method 
       const outlierResults = {};
       numericColumns.forEach(column => {
+        // Extract all numeric values from this column
         const values = parsedRows.map(row => parseFloat(row[column])).filter(val => !isNaN(val));
-        if (values.length < 3) return; // Skip columns with too few numeric values
 
-        // Use IQR method for initial detection
+        // Skip columns with insufficient numeric data
+        if (values.length < 3) return;
+
+        // Use IQR method for initial detection 
         const iqrResult = outlierStrategies.iqr(parsedRows, column);
 
+        // Store results with comprehensive statistics
         outlierResults[column] = {
           outliers: iqrResult.outliers,
           stats: {
@@ -395,21 +446,24 @@ app.post("/detect-outliers", upload.single("uploadedFile"), (req, res) => {
         };
       });
 
+      // Return comprehensive analysis results to client
       res.json({
         fileName: req.file.originalname,
-        numericColumns,
-        outlierResults,
-        totalOutliers: Object.values(outlierResults).reduce((sum, col) => sum + col.outliers.length, 0)
+        numericColumns, // List of columns analyzed
+        outlierResults, // Outlier findings per column
+        totalOutliers: Object.values(outlierResults).reduce((sum, col) => sum + col.outliers.length, 0) // Sum all outliers
       });
     });
 });
 
 // NG: Route to detect outliers in a specific column
+// Provides detailed analysis using all three detection methods for comparison
 app.post("/detect-outliers-column", upload.single("uploadedFile"), (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
   }
 
+  // Get target column from request body
   const { column } = req.body;
   if (!column) {
     return res.status(400).send("No column specified.");
@@ -438,6 +492,7 @@ app.post("/detect-outliers-column", upload.single("uploadedFile"), (req, res) =>
         return res.status(400).json({ error: "Empty file or invalid CSV format" });
       }
 
+      // Convert to object format for easier column access
       let parsedRows = rows.map((rowArr) => {
         let obj = {};
         headers.forEach((header, index) => {
@@ -446,29 +501,30 @@ app.post("/detect-outliers-column", upload.single("uploadedFile"), (req, res) =>
         return obj;
       });
 
-      // Check if column exists
+      // Validate that the requested column exists in the CSV
       if (!headers.includes(column)) {
         return res.status(400).json({ error: `Column "${column}" not found in CSV` });
       }
 
-      // Check if column is numeric
+      // Check if column contains sufficient numeric data for analysis
       const values = parsedRows.map(row => parseFloat(row[column])).filter(val => !isNaN(val));
       if (values.length < 3) {
         return res.status(400).json({ error: `Column "${column}" doesn't have enough numeric values for outlier detection` });
       }
 
-      // Detect outliers using all methods
+      // Apply all three detection methods for comprehensive comparison
       const zScoreResult = outlierStrategies.zScore(parsedRows, column);
       const iqrResult = outlierStrategies.iqr(parsedRows, column);
       const winsorizeResult = outlierStrategies.winsorize(parsedRows, column);
 
+      // Return detailed analysis with all method results and statistics
       res.json({
         fileName: req.file.originalname,
         column,
         results: {
-          zScore: zScoreResult,
-          iqr: iqrResult,
-          winsorize: winsorizeResult
+          zScore: zScoreResult,  // Z-score method results
+          iqr: iqrResult,        // IQR method results
+          winsorize: winsorizeResult // Winsorization method results
         },
         stats: {
           count: values.length,
@@ -481,12 +537,14 @@ app.post("/detect-outliers-column", upload.single("uploadedFile"), (req, res) =>
     });
 });
 
-// NG: Route to apply outlier treatment
+// NG: Route to apply outlier treatment to a specific column
+// Processes the file and returns cleaned data based on selected strategy
 app.post("/apply-outlier-treatment", upload.single("uploadedFile"), (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
   }
 
+  // Get treatment parameters from request
   const { strategy, column, parameters = {} } = req.body;
 
   let rows = [];
@@ -512,6 +570,7 @@ app.post("/apply-outlier-treatment", upload.single("uploadedFile"), (req, res) =
         return res.status(400).json({ error: "Empty file or invalid CSV format" });
       }
 
+      // Convert to object format for processing
       let parsedRows = rows.map((rowArr) => {
         let obj = {};
         headers.forEach((header, index) => {
@@ -520,26 +579,30 @@ app.post("/apply-outlier-treatment", upload.single("uploadedFile"), (req, res) =
         return obj;
       });
 
-      // Apply the selected strategy
+      // Apply the selected outlier treatment strategy
       let result;
       if (strategy === 'winsorize') {
+        // Cap outliers at specified percentiles (default: 5th and 95th)
         result = outlierStrategies.winsorize(parsedRows, column, parameters.percentile || 5);
       } else if (strategy === 'zScore') {
+        // Remove values with Z-score above threshold (default: 2.5)
         result = outlierStrategies.zScore(parsedRows, column, parameters.threshold || 2.5);
       } else if (strategy === 'iqr') {
+        // Remove values outside 1.5×IQR range
         result = outlierStrategies.iqr(parsedRows, column);
       } else {
         return res.status(400).json({ error: "Invalid strategy" });
       }
 
+      // Return treatment results including cleaned data for download
       res.json({
         fileName: req.file.originalname,
         column,
-        strategy: result.outliers[0]?.method || strategy,
-        outliersDetected: result.outliers.length,
-        outliers: result.outliers,
-        cleanedData: result.cleanedData,
-        originalHeaders: headers
+        strategy: result.outliers[0]?.method || strategy, // Method used with parameters
+        outliersDetected: result.outliers.length, // Number of values treated
+        outliers: result.outliers, // Detailed information about each outlier
+        cleanedData: result.cleanedData, // The processed dataset
+        originalHeaders: headers // Preserve original column order for download
       });
     });
 });
