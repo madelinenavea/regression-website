@@ -44,7 +44,27 @@
     </div>
 
 </div>
+<!-- UPLOAD TESTING SECTION -->
+<h1>Upload Testing</h1>
 
+<form id="upload-form" method="POST" enctype="multipart/form-data">
+    <input type="file" name="uploadedFile" accept=".csv">
+    <input type="submit" value="Upload File">
+</form>
+
+<div id="upload-message"></div>
+<div id="columns-container"></div>
+	<!-- MADDIE TESTING  -->
+      <button id="verify-btn">Verify Data Types</button>
+
+      <div id="boolean-panel" style="margin-top: 20px; display: none;">
+        <h4>Boolean Columns Conversion</h4>
+        <div id="boolean-columns-container"></div>
+        <button id="apply-boolean-btn">Apply Boolean Conversion</button>
+      </div>
+
+      <div id="verification-result"></div>
+	<!-- MADDIE TESTING  -->
 
 <!-- OUTER TAB CONTENT 2: PLOT PANEL -->
 <div id="plot-panel" class="tab-panel">
@@ -72,28 +92,6 @@
 	</div>
 
 </div>
-
-<!-- UPLOAD TESTING SECTION -->
-<h1>Upload Testing</h1>
-
-<form id="upload-form" method="POST" enctype="multipart/form-data">
-    <input type="file" name="uploadedFile" accept=".csv">
-    <input type="submit" value="Upload File">
-</form>
-
-<div id="upload-message"></div>
-<div id="columns-container"></div>
-	<!-- MADDIE TESTING  -->
-      <button id="verify-btn">Verify Data Types</button>
-
-      <div id="boolean-panel" style="margin-top: 20px; display: none;">
-        <h4>Boolean Columns Conversion</h4>
-        <div id="boolean-columns-container"></div>
-        <button id="apply-boolean-btn">Apply Boolean Conversion</button>
-      </div>
-
-      <div id="verification-result"></div>
-	<!-- MADDIE TESTING  -->
 
 
 <style>
