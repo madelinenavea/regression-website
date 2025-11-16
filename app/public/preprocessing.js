@@ -1,7 +1,33 @@
 document.addEventListener("DOMContentLoaded", () => {
     let csvData = [];      // Store rows in file
     let columnNames = [];  // Store names of all columns
-        
+
+document.getElementById("csv-file").addEventListener("change", (event) => {
+        let file = event.target.files[0];
+        if (!file) return;
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                // Trim whitespace from all values
+                csvData = results.data.map(row => {
+                    let newRow = {};
+                    for (let [key, value] of Object.entries(row)) {
+                        if (value) {
+                            newRow[key] = value.trim();
+                        } else {
+                            newRow[key] = "";
+                        }
+                    }
+                    return newRow;
+                });
+                columnNames = results.meta.fields;
+                showColumnSelectors(columnNames); // Show columns in left panel
+                displayTable(csvData);
+                showBooleanConversionPanel();
+            }
+        });
+    });
 function showColumnSelectors(columns) {
         let container = document.getElementById("columns-container");
         container.innerHTML = "";
