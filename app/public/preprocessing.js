@@ -1,3 +1,7 @@
+document.addEventListener("DOMContentLoaded", () => {
+    let csvData = [];      // Store rows in file
+    let columnNames = [];  // Store names of all columns
+        
 function showColumnSelectors(columns) {
         let container = document.getElementById("columns-container");
         container.innerHTML = "";
