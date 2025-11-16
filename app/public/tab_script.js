@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     innerTabs.forEach(tab => {
         tab.addEventListener("click", () => {
-            const parent = tab.closest("#bar-panel");
+            const parent = tab.closest(".tab-panel");
             parent.querySelectorAll(".inner-tab").forEach(t => t.classList.remove("active"));
             parent.querySelectorAll(".inner-panel").forEach(p => p.classList.remove("active"));
 
