@@ -1,30 +1,61 @@
-let categories = ['giraffes', 'monkeys', 'tigers'];
-let pop1 = [9, 20, 5];
-let pop2 = [5, 15, 3];
+function countCategories(arr) {
+    const counts = {};
+    arr.forEach(v => counts[v] = (counts[v] || 0) + 1);
+    return counts;
+}
 
-var record1 = [
-	{
-		x: categories,
-		y: pop1,
-		type: 'bar',
-		name: '2015'
+let column_selector = document.getElementById("column-name");
+let auto_bar_plot_button = document.getElementById("auto-bar-plot-button");
+console.log(data_file);
+
+//Inbuilt plotly function that parses csv's
+Plotly.d3.csv(data_file, function(err, rows) {
+	if (err) {
+		console.error("Error loading CSV:", err); 
+		return;
 	}
-];
 
-var record2 = [
-        {
-                x: categories,
-                y: pop2,
-                type: 'bar',
-		name: '2025'
-        }
-];
+	let columns = Object.keys(rows[0]);
+	console.log("Columns:", columns);
 
-let comp = [record1, record2];
-
-let layout = {barmode: 'group'};
+	columns.forEach(col => {
+		const xOpt = document.createElement("option");
+		xOpt.text = col;
+		xOpt.value = col;
+		column_selector.add(xOpt);
+	});
+});
 
 
-Plotly.newPlot('bar-tester', record1);
-Plotly.plot('bar-tester', record2);
+auto_bar_plot_button.addEventListener('click', () => {
+	let col_name = column_selector.value;
 
+	Plotly.d3.csv(data_file, function(err, rows) {
+		if (err) {
+			console.error("Error loading csv: ", err);
+			return;
+		}
+
+		let all_choices = rows.map(r => +r[col_name]);
+
+		let counts = countCategories(all_choices);
+		let categories = Object.keys(counts);
+		let values = Object.values(counts);
+
+		var record = [{
+			x: categories,
+			y: values,
+			type: 'bar',
+		}];
+
+		let layout = {barmode: 'group'};
+
+		Plotly.newPlot('auto-bar', record)
+	})
+})
+
+fetch("/data/user_files.json")
+  .then(response => response.json())  // automatically parses JSON
+  .then(data => {
+    console.log(data);
+  });
