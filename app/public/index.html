@@ -12,25 +12,25 @@
 <!-- OUTER TABS -->
 <!-- UPLOAD TESTING SECTION -->
 <h1>Upload Testing</h1>
-
-<form id="upload-form" method="POST" enctype="multipart/form-data">
-    <input type="file" name="uploadedFile" accept=".csv">
-    <input type="submit" value="Upload File">
+<form id="upload-form">
+  <input type="file" id="file-input" accept=".csv" />
+  <button type="button" id="load-btn">Load File</button>
 </form>
 
 <div id="upload-message"></div>
 <div id="columns-container"></div>
-	<!-- MADDIE TESTING  -->
-      <button id="verify-btn">Verify Data Types</button>
 
-      <div id="boolean-panel" style="margin-top: 20px; display: none;">
-        <h4>Boolean Columns Conversion</h4>
-        <div id="boolean-columns-container"></div>
-        <button id="apply-boolean-btn">Apply Boolean Conversion</button>
-      </div>
+<button id="verify-btn">Verify Data Types</button>
 
-      <div id="verification-result"></div>
-	<!-- MADDIE TESTING  -->
+<div id="boolean-panel" style="margin-top: 20px; display: none;">
+  <h4>Boolean Columns Conversion</h4>
+  <div id="boolean-columns-container"></div>
+  <button id="apply-boolean-btn">Apply Boolean Conversion</button>
+</div>
+
+<div id="verification-result"></div>
+
+<div id="table-container"></div>
 
 	
 <div class="tabs" id="outer-tabs">
