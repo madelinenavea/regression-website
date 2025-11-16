@@ -106,17 +106,101 @@ function displayAnalysisResults(result) {
     showOutlierDetectionOptions(result);
 }
 
+// NG: Function to download treated data as CSV - MOVE THIS FUNCTION TO THE TOP
+function downloadTreatedData(cleanedData, headers) {
+    if (!cleanedData || cleanedData.length === 0) {
+        alert('No data to download');
+        return;
+    }
+    
+    console.log('Downloading data:', { rows: cleanedData.length, columns: headers.length });
+    
+    // Build CSV content with proper formatting
+    const csvRows = [];
+    
+    // 1. HEADER ROW: Add column headers
+    const headerRow = headers.map(header => {
+        // Escape headers that contain commas, quotes, or newlines
+        if (header.includes(',') || header.includes('"') || header.includes('\n')) {
+            return `"${header.replace(/"/g, '""')}"`;
+        }
+        return header;
+    });
+    csvRows.push(headerRow.join(','));
+    
+    // 2. DATA ROWS: Process each row of data
+    cleanedData.forEach(row => {
+        const rowData = headers.map(header => {
+            let value = row[header];
+            
+            // Handle different data types and special cases
+            if (value === null || value === undefined) {
+                return '';
+            }
+            
+            // Convert to string for processing
+            const stringValue = String(value);
+            
+            // Check if value needs quoting
+            if (stringValue.includes(',') || 
+                stringValue.includes('"') || 
+                stringValue.includes('\n') || 
+                stringValue.includes('\r') ||
+                stringValue.trim() === '') {
+                
+                // Escape any quotes within the value and wrap in quotes
+                return `"${stringValue.replace(/"/g, '""')}"`;
+            }
+            
+            return stringValue;
+        });
+        
+        csvRows.push(rowData.join(','));
+    });
+    
+    // 3. CREATE CSV CONTENT
+    const csvContent = csvRows.join('\n');
+    
+    // 4. CREATE AND TRIGGER DOWNLOAD
+    try {
+        const blob = new Blob([csvContent], { 
+            type: 'text/csv; charset=utf-8;' 
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        a.href = url;
+        a.download = 'cleaned_data.csv';
+        a.style.display = 'none';
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        window.URL.revokeObjectURL(url);
+        
+        console.log('Download initiated successfully');
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        alert('Error downloading file. Please try again.');
+    }
+}
 
 
 // NG: Function to show outlier detection options after basic analysis
 function showOutlierDetectionOptions(result) {
+    // Create a new div element to hold the outlier detection interface
     const outlierSection = document.createElement('div');
+    
+    // Build HTML content for the outlier detection panel
     outlierSection.innerHTML = `
         <div style="border: 1px solid #007bff; padding: 15px; margin: 20px 0; border-radius: 5px; background: #f8f9fa;">
             <h3>🔍 Outlier Detection</h3>
             <p>Detect unusual values in your data that may need attention.</p>
             
             <div style="margin: 15px 0;">
+                <!-- Button to detect outliers across all numeric columns -->
                 <button onclick="detectAllOutliers()" 
                         style="background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 3px; cursor: pointer; margin-right: 10px;">
                     Detect Outliers in All Columns
@@ -124,10 +208,12 @@ function showOutlierDetectionOptions(result) {
                 
                 <div style="margin-top: 10px;">
                     <p><strong>Or detect outliers in a specific column:</strong></p>
+                    <!-- Dropdown populated with all column headers from the CSV -->
                     <select id="column-select" style="padding: 5px; margin-right: 10px;">
                         <option value="">Select a column...</option>
                         ${result.headers.map(header => `<option value="${header}">${header}</option>`).join('')}
                     </select>
+                    <!-- Button to detect outliers in the selected column only -->
                     <button onclick="detectColumnOutliers()" 
                             style="background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
                         Detect in Selected Column
@@ -137,80 +223,97 @@ function showOutlierDetectionOptions(result) {
         </div>
     `;
     
+    // Append the outlier detection panel to the main message container
     document.getElementById('upload-message').appendChild(outlierSection);
 }
 
 // NG: Function to detect outliers in all columns
 async function detectAllOutliers() {
+    // Get the file input element and check if a file is selected
     const fileInput = document.querySelector('input[type="file"]');
     if (!fileInput.files[0]) {
         alert('Please select a file first');
         return;
     }
     
+    // Create FormData object to send the file to the server
     const data = new FormData();
     data.append('uploadedFile', fileInput.files[0]);
     
+    // Show loading message while processing
     document.getElementById('upload-message').innerHTML = '<p>Detecting outliers in all columns...</p>';
     
     try {
+        // Send POST request to server's outlier detection endpoint
         const response = await fetch('/detect-outliers', {
             method: 'POST',
             body: data
         });
         
         if (response.ok) {
+            // If successful, parse JSON response and display results
             const result = await response.json();
             displayAllOutlierResults(result);
         } else {
+            // If server returns error, display error message
             const error = await response.text();
             document.getElementById('upload-message').innerHTML = 
                 `<p style="color: red;">Outlier Detection Failed: ${error}</p>`;
         }
     } catch (error) {
+        // Handle network errors or other exceptions
         console.error(error);
         document.getElementById('upload-message').innerHTML = 
             '<p style="color: red;">Error detecting outliers</p>';
     }
 }
 
-// NG:Function to detect outliers in a specific column
+// NG: Function to detect outliers in a specific column
 async function detectColumnOutliers() {
+    // Get the selected column from the dropdown
     const columnSelect = document.getElementById('column-select');
     const selectedColumn = columnSelect.value;
     
+    // Validate that a column was selected
     if (!selectedColumn) {
         alert('Please select a column first');
         return;
     }
     
+    // Get the file input and validate file selection
     const fileInput = document.querySelector('input[type="file"]');
     if (!fileInput.files[0]) {
         alert('Please select a file first');
         return;
     }
     
+    // Prepare form data with file and selected column name
     const data = new FormData();
     data.append('uploadedFile', fileInput.files[0]);
     data.append('column', selectedColumn);
     
+    // Show loading message specific to the selected column
     document.getElementById('upload-message').innerHTML = `<p>Detecting outliers in column "${selectedColumn}"...</p>`;
     
     try {
+        // Send POST request to column-specific outlier detection endpoint
         const response = await fetch('/detect-outliers-column', {
             method: 'POST',
             body: data
         });
         
         if (response.ok) {
+            // Parse and display results for the specific column
             const result = await response.json();
             displayColumnOutlierResults(result);
         } else {
+            // Display server error message
             const error = await response.text();
             document.getElementById('upload-message').innerHTML = 
                 `<p style="color: red;">Outlier Detection Failed: ${error}</p>`;
         }
     } catch (error) {
+        // Handle network or other errors
         console.error(error);
         document.getElementById('upload-message').innerHTML = 
             '<p style="color: red;">Error detecting outliers</p>';
@@ -219,6 +322,7 @@ async function detectColumnOutliers() {
 
 // NG: Function to display outlier results for all columns
 function displayAllOutlierResults(result) {
+    // Start building HTML for the results display
     let html = `
         <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 5px;">
             <h3>Outlier Detection Results for: ${result.fileName}</h3>
@@ -226,11 +330,14 @@ function displayAllOutlierResults(result) {
             <p><strong>Columns Analyzed:</strong> ${result.numericColumns.join(', ') || 'None'}</p>
     `;
     
+    // Check if any outliers were found in any columns
     if (Object.keys(result.outlierResults).length === 0) {
         html += `<p>No outliers detected in any numeric columns.</p>`;
     } else {
+        // Loop through each column that was analyzed for outliers
         Object.entries(result.outlierResults).forEach(([column, analysis]) => {
             if (analysis.outliers.length > 0) {
+                // Display column with outliers found (warning style)
                 html += `
                     <div style="margin: 15px 0; padding: 10px; border: 1px solid #ffc107; border-radius: 3px; background: #fffbf0;">
                         <h4>⚠️ Column: "${column}" - ${analysis.outliers.length} outliers found</h4>
@@ -240,7 +347,8 @@ function displayAllOutlierResults(result) {
                             Range: [${analysis.stats.min.toFixed(2)}, ${analysis.stats.max.toFixed(2)}]
                         </p>
                         <div style="margin-top: 10px;">
-                            <button onclick="showColumnOutlierOptions('${column}', ${analysis.outliers.length})" 
+                            <!-- Button to manage outliers in this specific column -->
+                            <button onclick="showOutlierTreatmentOptions('${column}', 'iqr', ${analysis.outliers.length})" 
                                     style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
                                 Manage Outliers in "${column}"
                             </button>
@@ -248,6 +356,7 @@ function displayAllOutlierResults(result) {
                     </div>
                 `;
             } else {
+                // Display column with no outliers found (success style)
                 html += `
                     <div style="margin: 10px 0; padding: 5px; color: green;">
                         ✓ Column "${column}": No outliers found
@@ -257,6 +366,7 @@ function displayAllOutlierResults(result) {
         });
     }
     
+    // Add navigation button to restart analysis
     html += `
         <div style="margin-top: 15px;">
             <button onclick="location.reload()" 
@@ -267,16 +377,19 @@ function displayAllOutlierResults(result) {
         </div>
     `;
     
+    // Update the page with the generated HTML
     document.getElementById('upload-message').innerHTML = html;
 }
 
 // NG: Function to display outlier results for a specific column
 function displayColumnOutlierResults(result) {
+    // Build HTML for detailed column analysis
     let html = `
         <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 5px;">
             <h3>Outlier Analysis for Column: "${result.column}"</h3>
             <p><strong>File:</strong> ${result.fileName}</p>
             
+            <!-- Display comprehensive statistics for the column -->
             <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 3px;">
                 <h4>📊 Column Statistics</h4>
                 <p><strong>Total Values:</strong> ${result.stats.count}</p>
@@ -286,13 +399,14 @@ function displayColumnOutlierResults(result) {
             </div>
     `;
     
-    // Show results from different methods
+    // Define the three outlier detection methods used
     const methods = {
-        iqr: result.results.iqr,
-        zScore: result.results.zScore,
-        winsorize: result.results.winsorize
+        iqr: result.results.iqr,        // Interquartile Range method
+        zScore: result.results.zScore,  // Z-Score method  
+        winsorize: result.results.winsorize // Winsorization method
     };
     
+    // Display results for each detection method
     Object.entries(methods).forEach(([method, methodResult]) => {
         html += `
             <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 3px;">
@@ -300,6 +414,7 @@ function displayColumnOutlierResults(result) {
                 <p><strong>Outliers Detected:</strong> ${methodResult.outliers.length}</p>
         `;
         
+        // Only show treatment button if outliers were found with this method
         if (methodResult.outliers.length > 0) {
             html += `
                 <button onclick="showOutlierTreatmentOptions('${result.column}', '${method}', ${methodResult.outliers.length})" 
@@ -312,6 +427,7 @@ function displayColumnOutlierResults(result) {
         html += `</div>`;
     });
     
+    // Add navigation button
     html += `
         <div style="margin-top: 15px;">
             <button onclick="location.reload()" 
@@ -327,18 +443,21 @@ function displayColumnOutlierResults(result) {
 
 // NG: Function to show treatment options for a column
 function showOutlierTreatmentOptions(column, strategy, outlierCount) {
+    // Map strategy codes to human-readable names
     const strategyNames = {
         iqr: 'IQR Method',
         zScore: 'Z-Score Method', 
         winsorize: 'Winsorization'
     };
     
+    // Map strategies to their descriptions
     const strategyDescriptions = {
         iqr: 'Removes values outside 1.5×IQR range',
         zScore: 'Removes values with Z-score > 2.5',
         winsorize: 'Caps extreme values at 5th/95th percentiles'
     };
     
+    // Build treatment confirmation interface
     let html = `
         <div style="border: 1px solid #dc3545; padding: 15px; margin: 10px 0; border-radius: 5px; background: #f8d7da;">
             <h3>🛠️ Outlier Treatment for "${column}"</h3>
@@ -356,6 +475,7 @@ function showOutlierTreatmentOptions(column, strategy, outlierCount) {
                 </ul>
             </div>
             
+            <!-- Action buttons for user decision -->
             <div style="margin-top: 20px;">
                 <button onclick="applyOutlierTreatment('${strategy}', '${column}')" 
                         style="background: #dc3545; color: white; border: none; padding: 10px 15px; border-radius: 3px; cursor: pointer; margin-right: 10px;">
@@ -374,34 +494,41 @@ function showOutlierTreatmentOptions(column, strategy, outlierCount) {
 
 // NG: Function to apply outlier treatment
 async function applyOutlierTreatment(strategy, column) {
+    // Validate file selection
     const fileInput = document.querySelector('input[type="file"]');
     if (!fileInput.files[0]) {
         alert('Please select a file first');
         return;
     }
     
+    // Prepare form data with file, strategy, and column info
     const data = new FormData();
     data.append('uploadedFile', fileInput.files[0]);
     data.append('strategy', strategy);
     data.append('column', column);
     
+    // Show processing message
     document.getElementById('upload-message').innerHTML = '<p>Applying outlier treatment...</p>';
     
     try {
+        // Send treatment request to server
         const response = await fetch('/apply-outlier-treatment', {
             method: 'POST',
             body: data
         });
         
         if (response.ok) {
+            // Display treatment results if successful
             const result = await response.json();
             displayTreatmentResults(result);
         } else {
+            // Display error message
             const error = await response.text();
             document.getElementById('upload-message').innerHTML = 
                 `<p style="color: red;">Treatment Failed: ${error}</p>`;
         }
     } catch (error) {
+        // Handle network errors
         console.error(error);
         document.getElementById('upload-message').innerHTML = 
             '<p style="color: red;">Error applying treatment</p>';
@@ -449,9 +576,10 @@ function displayTreatmentResults(result) {
         `;
     }
     
+    // Store the result data globally and use a simple function call
     html += `
         <div style="margin-top: 20px;">
-            <button onclick="downloadTreatedData(${JSON.stringify(result.cleanedData)}, ${JSON.stringify(result.originalHeaders)})" 
+            <button onclick="handleDownloadTreatedData()" 
                     style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 3px; cursor: pointer; margin-right: 10px;">
                 💾 Download Treated Data
             </button>
@@ -464,35 +592,20 @@ function displayTreatmentResults(result) {
     `;
     
     document.getElementById('upload-message').innerHTML = html;
+    
+    // Store the data for download (simple global variable approach)
+    window.lastTreatmentResult = result;
 }
 
-// NG: Function to download treated data as CSV
-function downloadTreatedData(cleanedData, headers) {
-    if (!cleanedData || cleanedData.length === 0) {
-        alert('No data to download');
+// NG: Simple handler function for download button
+function handleDownloadTreatedData() {
+    if (!window.lastTreatmentResult) {
+        alert('No treated data available to download');
         return;
     }
     
-    const csvContent = [
-        headers.join(','),
-        ...cleanedData.map(row => 
-            headers.map(header => {
-                const value = row[header];
-                // Handle null/undefined values and escape commas in strings
-                if (value === null || value === undefined) return '""';
-                if (typeof value === 'string' && value.includes(',')) return `"${value}"`;
-                return value;
-            }).join(',')
-        )
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'cleaned_data.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    const { cleanedData, originalHeaders } = window.lastTreatmentResult;
+    downloadTreatedData(cleanedData, originalHeaders);
 }
+
+
