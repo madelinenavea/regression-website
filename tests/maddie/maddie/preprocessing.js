@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     return newRow;
                 });
                 columnNames = results.meta.fields;
+                populatePlotDropdowns(columnNames);
                 showColumnSelectors(columnNames); // Show columns in left panel
                 displayTable(csvData);
                 showBooleanConversionPanel();
@@ -252,7 +253,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("boolean-panel").style.display = "none";
     });
 
-    
+
+
+
     //===================================================================
     //Max's plots:
     function populatePlotDropdowns(columns) {
