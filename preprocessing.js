@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     let csvData = [];      // Store rows in file
     let columnNames = [];  // Store names of all columns
-
+    let currentPage = 1;
+    let rowsPerPage = 50;
     // ----------------------------
     // 1. Load CSV file
     // ----------------------------
@@ -83,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function displayTable(data) {
         const container = document.getElementById("table-container");
         container.innerHTML = "";
+
         if (data.length === 0) return;
 
         const table = document.createElement("table");
@@ -96,8 +98,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         table.appendChild(headerRow);
 
-        // Data rows
-        data.forEach(row => {
+        // Pagination calculations
+        let start = (currentPage - 1) * rowsPerPage;
+        let end = Math.min(start + rowsPerPage, data.length);
+
+        // Render *only* the visible rows
+        for (let i = start; i < end; i++) {
+            const row = data[i];
             const tr = document.createElement("tr");
             Object.values(row).forEach(val => {
                 const td = document.createElement("td");
@@ -105,19 +112,39 @@ document.addEventListener("DOMContentLoaded", () => {
                 tr.appendChild(td);
             });
             table.appendChild(tr);
-        });
+        }
 
         container.appendChild(table);
 
-        // Limit visible rows to 10
-        const firstRow = table.querySelector("tr:nth-child(2)");
-        if (firstRow) {
-            const rowHeight = firstRow.offsetHeight;
-            const headerHeight = table.querySelector("tr").offsetHeight;
-            container.style.height = (headerHeight + rowHeight * 10) + "px";
-            container.style.overflowY = "auto";
-        }
+        // Pagination buttons
+        const paginationDiv = document.createElement("div");
+        paginationDiv.classList.add("pagination-controls");
+
+        const totalPages = Math.ceil(data.length / rowsPerPage);
+
+        paginationDiv.innerHTML = `
+            <button id="prev-page" ${currentPage === 1 ? "disabled" : ""}>Prev</button>
+            <span> Page ${currentPage} of ${totalPages} </span>
+            <button id="next-page" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
+        `;
+
+        container.appendChild(paginationDiv);
+
+        // Click handling
+        document.getElementById("prev-page").onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayTable(csvData);
+            }
+        };
+        document.getElementById("next-page").onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayTable(csvData);
+            }
+        };
     }
+
 
     // ----------------------------
     // 4. Verify column types
