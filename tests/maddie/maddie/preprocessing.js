@@ -251,4 +251,81 @@ document.addEventListener("DOMContentLoaded", () => {
         displayTable(csvData);
         document.getElementById("boolean-panel").style.display = "none";
     });
+
+    
+    //===================================================================
+    //Max's plots:
+    function populatePlotDropdowns(columns) {
+    let barSelect = document.getElementById("plot-bar-column");
+    let xSelect = document.getElementById("plot-x");
+    let ySelect = document.getElementById("plot-y");
+
+    [barSelect, xSelect, ySelect].forEach(select => select.innerHTML = "");
+
+    columns.forEach(col => {
+        let opt1 = document.createElement("option");
+        opt1.value = col; 
+        opt1.textContent = col;
+
+        let opt2 = opt1.cloneNode(true);
+        let opt3 = opt1.cloneNode(true);
+
+        barSelect.appendChild(opt1);
+        xSelect.appendChild(opt2);
+        ySelect.appendChild(opt3);
+    });
+}
+
+
+function plotBarColumn(column) {
+    const values = csvData.map(r => r[column]);
+
+    // Count categories
+    const counts = {};
+    values.forEach(v => {
+        if (!counts[v]) counts[v] = 0;
+        counts[v]++;
+    });
+
+    const data = [{
+        x: Object.keys(counts),
+        y: Object.values(counts),
+        type: "bar"
+    }];
+
+    Plotly.newPlot("plot-output", data, {
+        title: `Bar Chart of ${column}`
+    });
+}
+
+
+function plotScatter(xCol, yCol) {
+    const x = csvData.map(r => parseFloat(r[xCol])).filter(v => !isNaN(v));
+    const y = csvData.map(r => parseFloat(r[yCol])).filter(v => !isNaN(v));
+
+    const trace = {
+        x,
+        y,
+        mode: "markers",
+        type: "scatter"
+    };
+
+    Plotly.newPlot("plot-output", [trace], {
+        title: `${xCol} vs ${yCol}`,
+        xaxis: { title: xCol },
+        yaxis: { title: yCol }
+    });
+}
+
+document.getElementById("plot-bar-btn").addEventListener("click", () => {
+    let col = document.getElementById("plot-bar-column").value;
+    plotBarColumn(col);
+});
+
+document.getElementById("plot-scatter-btn").addEventListener("click", () => {
+    let x = document.getElementById("plot-x").value;
+    let y = document.getElementById("plot-y").value;
+    plotScatter(x, y);
+});
+
 });
