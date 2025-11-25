@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html>
+	
 
 <head>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 
 <body>
-
-<h1>Plotting</h1>
 
 <!-- OUTER TABS -->
 <!-- UPLOAD TESTING SECTION -->
@@ -32,10 +31,12 @@
 
 <div id="table-container"></div>
 
+<h1>Plotting</h1>
 	
 <div class="tabs" id="outer-tabs">
     <button class="outer-tab active" data-target="bar-panel">Bar</button>
     <button class="outer-tab" data-target="plot-panel">Plot</button>
+	<buttonn class="outer-tab" data-target="table-panel">Table</buttonn>
 </div>
 
 <!-- OUTER TAB CONTENT 1: BAR PANEL -->
@@ -95,8 +96,50 @@
 
 </div>
 
+<!-- OUTER TAB CONTENT 3: REGRESSIONS TABLE PANEL -->
+ <div id="table-panel" class="tab-panel">
+	<table>
+		<tr>
+			<td>Calculation Type</td>
+			<td>Result</td>
+		</tr>
+		<tr>
+			<td>Total</td>
+			<td id="total"></td>
+		</tr>
+		<tr>
+			<td>Expected Value</td>
+			<td id="expected-value"></td>
+		</tr>
+		<tr>
+			<td>Variance</td>
+			<td id="variance"></td>
+		</tr>
+		<tr>
+			<td>Standard Deviation</td>
+			<td id="standerd-deviation"></td>
+		</tr>
+		<tr>
+			<td>Min</td>
+			<td id="min"></td>
+		</tr>
+		<tr>
+			<td>Max</td>
+			<td id="max"></td>
+		</tr>
+		<tr>
+			<td>Variance</td>
+			<td id="variance"></td>
+		</tr>
+	</table>
+ </div>
+
 
 <style>
+	table, th, td {
+		border: 1px solid black;
+		border-collapse: collapse;
+	}
     .tabs {
         display: flex;
         gap: 6px;

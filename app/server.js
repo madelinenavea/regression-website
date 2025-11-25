@@ -77,7 +77,7 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
   // NG: Log the original filename of the uploaded file for debugging and tracking
   console.log("Uploaded file:", req.file.originalname);
 
-  // NG: Initialize arrays to store CSV data during processing
+  // NG: Initialize arrays to store CSV data during processingypeError [ERR_INVALID_ARG_TYPE]: The "path" argument must be of type string. Received undefined
   let rows = [];
   let headers = [];
   let columnIssues = [];
@@ -125,6 +125,12 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
 
     // NG - Event: When CSV parsing is complete, process the data and send analysis results
     .on("end", () => {
+
+      // MZ: Download the file into data directory
+      const permanentDir = path.join(__dirname, "public", "data");
+      const permanentPath = path.join(permanentDir, path.basename(req.file.originalname));
+      fs.copyFileSync(req.file.path, permanentPath);
+
       // NG - Clean up: Delete the uploaded temporary file to free disk space
       fs.unlinkSync(req.file.path);
 
@@ -392,6 +398,11 @@ app.post("/detect-outliers", upload.single("uploadedFile"), (req, res) => {
       }
     })
     .on("end", () => {
+      // Save permanent copy of the file
+      const permanentDir = path.join(__dirname, "public", "data");
+      const permanentPath = path.join(__dirname, permanentDir, `${fileGUID}.csv`);
+      fs.copyFileSync(req.file.path, permanentPath);
+
       // Clean up: delete the temporary uploaded file
       fs.unlinkSync(req.file.path);
 
