@@ -34,6 +34,26 @@
     <div id="table-container"></div>
   </div>
 
+	<div id="plot-section">
+	  <h3>Data Visualization</h3>
+	
+	  <label>Select Column (Categorical / Bar Plot)</label>
+	  <select id="plot-bar-column"></select>
+	  <button id="plot-bar-btn">Plot Bar Chart</button>
+	
+	  <br><br>
+	
+	  <label>X-axis:</label>
+	  <select id="plot-x"></select>
+	
+	  <label>Y-axis:</label>
+	  <select id="plot-y"></select>
+	  <button id="plot-scatter-btn">Plot Scatter Plot</button>
+	
+	  <div id="plot-output" style="margin-top:20px;"></div>
+	</div>
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="preprocessing.js"></script>
 </body>
