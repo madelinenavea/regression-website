@@ -5,22 +5,33 @@
   <meta charset="UTF-8">
   <style>
     body {
-    font-family: Arial;
+      font-family: Arial;
     }
+
     #upload-preprocess {
       display: flex;
       border-bottom: 1px solid #ccc;
       padding-bottom: 20px;
     }
+
     #left-panel {
-      width: 300px;
+      width: 320px;
       padding: 20px;
       border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
     }
 
-    #right-panel {
-      flex: 1;
-      padding: 20px;
+    #upload-form input {
+      width: 100%;
+    }
+
+    #columns-container {
+      margin-top: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 5px;
     }
 
     .field-row {
@@ -39,85 +50,111 @@
       border-collapse: collapse;
       padding: 5px;
     }
+
+    #table-container {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
     #plot-section {
       margin-top: 25px;
       padding: 20px;
     }
+
     .outlier-row {
-    background-color: #ffcccc;
+      background-color: #ffcccc;
+    }
+
+    /* Optional: style verification result to contain long messages */
+    #verification-result {
+      margin-top: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 5px;
+    }
+
+    /* Optional: scrollable boolean conversion panel */
+    #boolean-columns-container {
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 5px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin-top: 5px;
     }
   </style>
 </head>
 
 <body>
-<div id="upload-preprocess">
-  <div id="left-panel">
-    <h3>Upload CSV</h3>
-    <div id="upload-form">
-      <input type="file" id="csv-file" name="uploadedFile" accept=".csv">
+  <div id="upload-preprocess">
+    <div id="left-panel">
+      <h3>Upload CSV</h3>
+      <div id="upload-form">
+        <input type="file" id="csv-file" name="uploadedFile" accept=".csv">
+      </div>
 
-    </div>
-      <div id="upload-message"></div>
+      <div id="upload-message" style="margin-top:10px;"></div>
+
+      <!-- Scrollable column selectors -->
+      <h4>Verify Column Types</h4>
       <div id="columns-container"></div>
 
       <button id="verify-btn">Verify Data Types</button>
-      <button id="check-quality-btn">Check Missing Values & Duplicates</button>
-      <div id="quality-results" style="margin-top:10px;"></div>
+      <div id="verification-result"></div>
 
+      <button id="check-quality-btn" style="margin-top:10px;">Check Missing Values & Duplicates</button>
+      <div id="quality-results" style="margin-top:10px;"></div>
 
       <div id="boolean-panel" style="margin-top: 20px; display: none;">
         <h4>Boolean Columns Conversion</h4>
         <div id="boolean-columns-container"></div>
         <button id="apply-boolean-btn">Apply Boolean Conversion</button>
       </div>
+    </div>
 
-      <div id="verification-result"></div>
+    <div id="right-panel">
+      <h3>CSV Data</h3>
+      <div id="table-container"></div>
+    </div>
   </div>
 
-  <div id="right-panel">
-    <h3>CSV Data</h3>
-    <div id="table-container"></div>
+  <div id="outlier-section" style="display:none; margin: 20px; border:1px solid #ccc; padding: 15px;">
+    <h3>Outlier Detection</h3>
+    <button id="detect-outliers-btn">Detect Outliers</button>
+    <div id="outlier-results" style="margin-top: 10px; max-height: 200px; overflow-y:auto;"></div>
   </div>
-</div>
 
-<div id="outlier-section" style="display:none; margin: 20px; border:1px solid #ccc; padding: 15px;">
-  <h3>Outlier Detection</h3>
-  <button id="detect-outliers-btn">Detect Outliers</button>
-  <div id="outlier-results" style="margin-top: 10px; max-height: 200px; overflow-y:auto;"></div>
-</div>
+  <h3>Outlier Treatment</h3>
+  <select id="outlier-treatment-method">
+    <option value="winsor">Winsorization (cap 5th–95th)</option>
+    <option value="remove-z">Remove Z-score Outliers</option>
+    <option value="remove-iqr">Remove IQR Outliers</option>
+  </select>
+  <button id="apply-treatment-btn">Apply Treatment</button>
+  <div id="treatment-result" style="margin-top:10px;"></div>
 
+  <div id="plot-section">
+    <h3>Data Visualization</h3>
 
+    <label>Select Column (Categorical / Bar Plot)</label>
+    <select id="plot-bar-column"></select>
+    <button id="plot-bar-btn">Plot Bar Chart</button>
 
-<h3>Outlier Treatment</h3>
-<select id="outlier-treatment-method">
-  <option value="winsor">Winsorization (cap 5th–95th)</option>
-  <option value="remove-z">Remove Z-score Outliers</option>
-  <option value="remove-iqr">Remove IQR Outliers</option>
-</select>
-<button id="apply-treatment-btn">Apply Treatment</button>
-<div id="treatment-result" style="margin-top:10px;"></div>
+    <br><br>
 
+    <label>X-axis:</label>
+    <select id="plot-x"></select>
 
+    <label>Y-axis:</label>
+    <select id="plot-y"></select>
+    <button id="plot-scatter-btn">Plot Scatter Plot</button>
 
-
-<div id="plot-section">
-  <h3>Data Visualization</h3>
-
-  <label>Select Column (Categorical / Bar Plot)</label>
-  <select id="plot-bar-column"></select>
-  <button id="plot-bar-btn">Plot Bar Chart</button>
-
-  <br><br>
-
-  <label>X-axis:</label>
-  <select id="plot-x"></select>
-
-  <label>Y-axis:</label>
-  <select id="plot-y"></select>
-  <button id="plot-scatter-btn">Plot Scatter Plot</button>
-
-  <div id="plot-output" style="margin-top:20px;"></div>
-</div>
+    <div id="plot-output" style="margin-top:20px;"></div>
+  </div>
 
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
