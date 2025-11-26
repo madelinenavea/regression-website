@@ -5,6 +5,10 @@ let crypto = require("crypto");
 let path = require("path");
 let fs = require("fs");
 let csv = require("fast-csv");
+process.stdin.setEncoding("utf8");
+
+let userDBPath = path.join(__dirname, "public", "data", "user_files.json");
+let dataDir = path.join(__dirname, "public", "data");
 
 let app = express();
 let port = 3000;
@@ -55,6 +59,8 @@ app.get('/Walmart_Sales.csv', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'data', 'Walmart_Sales.csv'));
   console.log("Sent Walmart File");
 });
+
+
 
 app.post("/upload", upload.single("uploadedFile"), (req, res) => {
   if (!req.file) {
@@ -128,8 +134,63 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
 
       // MZ: Download the file into data directory
       const permanentDir = path.join(__dirname, "public", "data");
-      const permanentPath = path.join(permanentDir, path.basename(req.file.originalname));
+      const permanentPath = path.join(permanentDir, `${fileGUID}.csv`);
+      //const permanentPath = path.join(permanentDir, path.basename(req.file.originalname));
       fs.copyFileSync(req.file.path, permanentPath);
+
+      // MZ: Update the user_files.json to keep track of the files.
+      //    This only works for the serrion the user is on. If the user clears
+      //    cookies or closes browser, they will no longer be able to access their file
+      
+      const userFileDBPath = path.join(permanentDir, "user_files.json");
+
+      // Ensure user_files.json exists
+      if (!fs.existsSync(userFileDBPath)) {
+        fs.writeFileSync(userFileDBPath, JSON.stringify({ users: [] }, null, 2));
+      }
+
+      // Load user_files.json
+      let userDB = JSON.parse(fs.readFileSync(userFileDBPath, "utf8"));
+
+      // Identify user by sessionID
+      let userID = req.sessionID;
+
+      // Find the user based on their sessionID
+      let existingUser = userDB.users.find(u => u.sessionID === userID);
+
+      // Prepare file record
+      let fileRecord = {
+        guid: fileGUID,
+        fileName: req.file.originalname,
+        uploadDate: new Date().toISOString(),
+        headers: headers
+      };
+
+      // If user doesn't exist → add them
+      if (!existingUser) {
+        userDB.users.push({
+          sessionID: userID,
+          files: [fileRecord]
+        });
+        console.log("New user added to user_files.json");
+      } else {
+        // If user exists, check if same filename already uploaded
+        let existingFileIndex = existingUser.files.findIndex(f => f.fileName === req.file.originalname);
+
+        if (existingFileIndex !== -1) {
+          // Replace file entry
+          existingUser.files[existingFileIndex] = fileRecord;
+          console.log("Existing file replaced for user");
+        } else {
+          // Add new file
+          existingUser.files.push(fileRecord);
+          console.log("New file added for existing user");
+        }
+      }
+
+      // Write back to user_files.json
+      fs.writeFileSync(userFileDBPath, JSON.stringify(userDB, null, 2));
+      console.log("user_files.json updated");
 
       // NG - Clean up: Delete the uploaded temporary file to free disk space
       fs.unlinkSync(req.file.path);
@@ -398,11 +459,6 @@ app.post("/detect-outliers", upload.single("uploadedFile"), (req, res) => {
       }
     })
     .on("end", () => {
-      // Save permanent copy of the file
-      const permanentDir = path.join(__dirname, "public", "data");
-      const permanentPath = path.join(__dirname, permanentDir, `${fileGUID}.csv`);
-      fs.copyFileSync(req.file.path, permanentPath);
-
       // Clean up: delete the temporary uploaded file
       fs.unlinkSync(req.file.path);
 
@@ -616,6 +672,60 @@ app.post("/apply-outlier-treatment", upload.single("uploadedFile"), (req, res) =
         originalHeaders: headers // Preserve original column order for download
       });
     });
+});
+
+
+function clearUsers() {
+    try {
+        fs.writeFileSync(userDBPath, JSON.stringify({ users: [] }, null, 2));
+        console.log("\n✔ All users cleared from user_files.json\n");
+    } catch (err) {
+        console.error("Error clearing users:", err);
+    }
+}
+
+function clearFiles() {
+    try {
+        const files = fs.readdirSync(dataDir);
+
+        let count = 0;
+        for (const file of files) {
+            if (file.endsWith(".csv") && file !== "Walmart_Sales.csv") {
+                fs.unlinkSync(path.join(dataDir, file));
+                count++;
+            }
+        }
+
+        console.log(`\n✔ Deleted ${count} uploaded CSV file(s)\n`);
+    } catch (err) {
+        console.error("Error clearing files:", err);
+    }
+}
+
+
+process.stdin.on("data", (input) => {
+    const command = input.trim();
+
+    if (command === "clearusers") {
+        clearUsers();
+    } 
+    else if (command === "clearfiles") {
+        clearFiles();
+    } 
+    else if (command === "resetall") {
+        clearUsers();
+        clearFiles();
+    } 
+    else if (command === "help") {
+        console.log("\nAvailable commands:");
+        console.log("  clearusers  - Remove all users from user_files.json");
+        console.log("  clearfiles  - Delete all CSV files in /public/data");
+        console.log("  resetall    - Cleanup users + CSV files");
+        console.log("  help        - Show this menu\n");
+    } 
+    else {
+        console.log(`Unknown command: ${command} (type 'help')`);
+    }
 });
 
 
