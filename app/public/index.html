@@ -4,6 +4,8 @@
 
 <head>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 </head>
 
 <body>
@@ -31,7 +33,48 @@
 
 <div id="table-container"></div>
 
+
+
+
+
+
+
 <h1>Plotting</h1>
+
+<div>
+	<label for="files">Chose a file</label>
+	<select id="files" name="files"></select>
+
+	<!-- Fetch command to get all of the file names to add to the selector -->
+	<script>
+		function populateFileDropdown() {
+    		axios.get('/filenames').then(res => {
+    	        let select = document.getElementById('files');
+    	        select.innerHTML = ""; // clear old options
+
+            	// Add placeholder
+        	    let placeholder = document.createElement('option');
+        	    placeholder.textContent = "Select a file";
+        	    placeholder.disabled = true;
+        	    placeholder.selected = true;
+        	    select.appendChild(placeholder);
+
+	            // Add files from response
+	            res.data.files.forEach(fileName => {
+	                let option = document.createElement('option');
+	                option.value = fileName;
+	                option.textContent = fileName;
+   	            	select.appendChild(option);
+            	});
+        	}).catch(error => {
+        	    console.error("Error fetching file list:", error);
+			});
+		}
+
+		// Initial load
+		populateFileDropdown();
+	</script>
+</div>
 	
 <div class="tabs" id="outer-tabs">
     <button class="outer-tab active" data-target="bar-panel">Bar</button>

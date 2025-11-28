@@ -60,6 +60,47 @@ app.get('/Walmart_Sales.csv', (req, res) => {
   console.log("Sent Walmart File");
 });
 
+app.get('/filenames', (req, res) => {
+  console.log("received");
+
+  const sessionID = req.sessionID; // prints correctly
+  if (!sessionID) return res.status(401).json({ error: 'No session ID' });
+
+  const dataPath = path.join(__dirname, 'public', 'data', 'user_files.json');
+  console.log("Reading file:", dataPath);
+
+  fs.readFile(dataPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading data file:', err);
+      return res.status(500).json({ error: 'Server error reading data' });
+    }
+
+    console.log("File read successfully");
+
+    let json;
+    try {
+      json = JSON.parse(data);
+      console.log("JSON parsed successfully");
+    } catch (e) {
+      console.error("Invalid JSON:", e);
+      return res.status(500).json({ error: "Invalid JSON in user_files.json" });
+    }
+
+    const user = json.users.find(u => u.sessionID === sessionID);
+    if (!user) {
+      console.log("User not found for sessionID:", sessionID);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log("Found user:", user.sessionID);
+
+    const fileNames = (user.files || []).map(f => f.fileName); // <--- correct property
+    console.log("File names:", fileNames);
+
+    res.json({ sessionID, files: fileNames });
+    console.log("Sent"); // ✅ This WILL run now if no errors
+  });
+});
 
 
 app.post("/upload", upload.single("uploadedFile"), (req, res) => {
@@ -225,7 +266,6 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
         });
         return obj;
       })
-
       // NG: Initialize data structures for analysis
       let missingLocations = [];
       let seenRows = new Map();
