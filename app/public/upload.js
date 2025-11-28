@@ -17,6 +17,9 @@ form.addEventListener('submit', async (e) => {
         if (response.ok) {
             let result = await response.json();
             displayAnalysisResults(result);
+
+            // MZ: upon every upload populate the file selection menu
+            populateFileDropdown();
         }
         else {
             let error = await response.text();
