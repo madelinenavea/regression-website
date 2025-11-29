@@ -1,29 +1,71 @@
-Plotly.d3.csv(data_file, function(err, rows) {
-	if (err) {
-		console.error("Error loading CSV:", err);
-		return;
-	}
+// Plotly.d3.csv(data_file, function(err, rows) {
+// 	if (err) {
+// 		console.error("Error loading CSV:", err);
+// 		return;
+// 	}
 
-  	const columns = Object.keys(rows[0]);
+//   	const columns = Object.keys(rows[0]);
 
-  	columns.forEach(col => {
-		x_dropdowns.forEach(drop => {
-			let opt = document.createElement("option");
-			opt.text = col;
-			opt.value = col;
-			drop.add(opt);
+//   	columns.forEach(col => {
+// 		x_dropdowns.forEach(drop => {
+// 			let opt = document.createElement("option");
+// 			opt.text = col;
+// 			opt.value = col;
+// 			drop.add(opt);
+// 		});
+
+// 		y_dropdowns.forEach(drop => {
+// 			let opt = document.createElement("option");
+// 			opt.text = col;
+// 			opt.value = col;
+// 			drop.add(opt);
+// 		});
+// 	});
+// 	sharedSelection.x = columns[0];
+//     sharedSelection.y = columns[0];
+// });
+
+let selectFile = document.getElementById('files');
+
+function updateDropdowns() {
+	let fileName = 	selectFile.value;
+
+	if (!fileName) return;
+
+	axios.get('file_columns', {
+		params: {fileName}
+	})
+	.then(res => {
+		let columns = res.data.columns;
+
+		columns.forEach(col => {
+			x_dropdowns.forEach(drop => {
+				let opt = document.createElement("option");
+				opt.text = col;
+				opt.value = col;
+				drop.add(opt);
+			});
+
+			y_dropdowns.forEach(drop => {
+				let opt = document.createElement("option");
+				opt.text = col;
+				opt.value = col;
+				drop.add(opt);
+			});
 		});
 
-		y_dropdowns.forEach(drop => {
-			let opt = document.createElement("option");
-			opt.text = col;
-			opt.value = col;
-			drop.add(opt);
-		});
-	});
-	sharedSelection.x = columns[0];
-    sharedSelection.y = columns[0];
+		sharedSelection.x = columns[0];
+		sharedSelection.y = columns[0];
+		console.log(sharedSelection.x, sharedSelection.y, 'no')
+	})
+	.catch(err => console.error("Error fetching columns:", err));
+}
+
+selectFile.addEventListener("select", () => {
+	console.log("Selected");
+	updateDropdowns();
 });
+
 
 
 function plotCSV(containerId) {
@@ -49,7 +91,6 @@ function plotCSV(containerId) {
 			//TO-DO
 			return;
 		}
-
     });
 }
 

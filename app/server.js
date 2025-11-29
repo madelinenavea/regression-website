@@ -180,7 +180,7 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
       fs.copyFileSync(req.file.path, permanentPath);
 
       // MZ: Update the user_files.json to keep track of the files.
-      //    This only works for the serrion the user is on. If the user clears
+      //    This only works for the session the user is on. If the user clears
       //    cookies or closes browser, they will no longer be able to access their file
       
       const userFileDBPath = path.join(permanentDir, "user_files.json");
@@ -206,7 +206,7 @@ app.post("/upload", upload.single("uploadedFile"), (req, res) => {
         uploadDate: new Date().toISOString(),
         headers: headers
       };
-
+      
       // If user doesn't exist → add them
       if (!existingUser) {
         userDB.users.push({

@@ -6,7 +6,6 @@ function countCategories(arr) {
 
 let column_selector = document.getElementById("column-name");
 let auto_bar_plot_button = document.getElementById("auto-bar-plot-button");
-console.log(data_file);
 
 //Inbuilt plotly function that parses csv's
 Plotly.d3.csv(data_file, function(err, rows) {

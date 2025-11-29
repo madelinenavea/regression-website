@@ -1,29 +1,21 @@
 {
   "users": [
     {
-      "sessionID": "zFKMkUUde1br0xI07hh7ye6gCc-KEvUf",
+      "sessionID": "KJ_oDrolttGsmgyZp3Q91LbJe3N4T3z1",
       "files": [
         {
-          "guid": "5df2e079-2cc9-440a-a5b9-8ab659c8f58f",
-          "fileName": "Walmart_Sales.csv",
-          "uploadDate": "2025-11-28T18:56:16.775Z",
+          "guid": "2fa3d898-6125-426c-ac62-5f5c5927cfe3",
+          "fileName": "graduate_admission1.csv",
+          "uploadDate": "2025-11-29T15:46:03.528Z",
           "headers": [
-            "Store",
-            "Date",
-            "Weekly_Sales",
-            "Holiday_Flag",
-            "Temperature",
-            "Fuel_Price",
-            "CPI",
-            "Unemployment"
-          ]
-        },
-        {
-          "guid": "cab14c94-fee3-4fa0-9ae4-6c9698795469",
-          "fileName": "testdata_missing_dups.csv",
-          "uploadDate": "2025-11-28T18:56:26.424Z",
-          "headers": [
-            "ID\tName\tAge\tCity\tSalary\tDepartment"
+            "GRE Score",
+            "TOEFL Score",
+            "University Rating",
+            "SOP",
+            "LOR",
+            "GPA",
+            "Research",
+            "Chance of Admit"
           ]
         }
       ]
