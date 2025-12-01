@@ -1,28 +1,12 @@
 {
   "users": [
     {
-      "sessionID": "iy2JI84iO7HTBQz7FGmnAQFAhpRvyY12",
+      "sessionID": "TCgLhTxNq2NRxORGkCvis61xOY31BJHh",
       "files": [
         {
-          "guid": "4599abe6-8e19-4544-ac8d-65a463bb6166",
-          "fileName": "diabetes.csv",
-          "uploadDate": "2025-12-01T16:27:32.182Z",
-          "headers": [
-            "Pregnancies",
-            "Glucose",
-            "BloodPressure",
-            "SkinThickness",
-            "Insulin",
-            "BMI",
-            "DiabetesPedigreeFunction",
-            "Age",
-            "Outcome"
-          ]
-        },
-        {
-          "guid": "50b25d76-0eae-470f-b32d-5448beec9032",
+          "guid": "1101015c-7242-4a45-92cd-9af8f6875df6",
           "fileName": "graduate_admission1.csv",
-          "uploadDate": "2025-12-01T16:28:19.399Z",
+          "uploadDate": "2025-12-01T16:48:34.941Z",
           "headers": [
             "GRE Score",
             "TOEFL Score",

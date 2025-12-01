@@ -66,8 +66,8 @@ selectFile.addEventListener("change", () => {
 	updateDropdowns();
 });
 
-function getColumns(fileName, x, y) {
-    return axios.get('/columns', {
+function getColumnData(fileName, x, y) {
+    return axios.get('/column-data', {
         params: {
             fileName,  // match by name, server finds the GUID
             x,
@@ -81,6 +81,10 @@ function getColumns(fileName, x, y) {
     .catch(err => {
         console.error("Error fetching 2 columns:", err);
     });
+}
+
+function getRegressions() {
+
 }
 
 
@@ -114,7 +118,7 @@ function plotCSV(containerId) {
 
 // Use for reg-plot
 document.getElementById("reg-plot-button").addEventListener("click", () => {
-	let columns = getColumns(selectFile.value, sharedSelection.x, sharedSelection.y);
+	let columns = getColumnData(selectFile.value, sharedSelection.x, sharedSelection.y);
 	console.log(columns);
 });
 

@@ -147,7 +147,7 @@ app.get("/file_columns", (req, res) => {
 });
 
 
-app.get('/columns', (req, res) => {
+app.get('/column-data', (req, res) => {
     const fileName = req.query.fileName;
     const xCol = req.query.x;
     const yCol = req.query.y;
@@ -161,12 +161,11 @@ app.get('/columns', (req, res) => {
 
         // Find file by name and get its GUID
         let guid = null;
-        let headers = null;
+
         for (const user of users) {
             for (const file of user.files) {
                 if (file.fileName === fileName) {
                     guid = file.guid;
-                    headers = file.headers;
                     break;
                 }
             }
@@ -195,14 +194,88 @@ app.get('/columns', (req, res) => {
             const yVals = [];
 
             for (let r = 1; r < rows.length; r++) {
-                xVals.push(rows[r][xIndex]);
-                yVals.push(rows[r][yIndex]);
+                const xVal = parseFloat(rows[r][xIndex]);
+                const yVal = parseFloat(rows[r][yIndex]);
+
+                if (!isNaN(xVal) && !isNaN(yVal)) {
+                    xVals.push(xVal);
+                    yVals.push(yVal);
+                }
             }
 
-            res.json({ x: xVals, y: yVals });
+            // STAT FUNCTIONS
+            const sum = arr => arr.reduce((a, b) => a + b, 0);
+            const mean = arr => sum(arr) / arr.length;
+            const variance = arr => {
+                const m = mean(arr);
+                return arr.reduce((a, b) => a + (b - m) ** 2, 0) / arr.length;
+            };
+            const stddev = arr => Math.sqrt(variance(arr));
+            const covariance = (xArr, yArr) => {
+                const mx = mean(xArr);
+                const my = mean(yArr);
+                let cov = 0;
+                for (let i = 0; i < xArr.length; i++) {
+                    cov += (xArr[i] - mx) * (yArr[i] - my);
+                }
+                return cov / xArr.length;
+            };
+
+            // LINEAR REGRESSION
+            const mx = mean(xVals);
+            const my = mean(yVals);
+            const covXY = covariance(xVals, yVals);
+            const varX = variance(xVals);
+
+            //slope and intercept
+            const slope = covXY / varX;          
+            const intercept = my - slope * mx;       
+
+            // R2 CALCULATION
+            let ssTotal = 0;
+            let ssResidual = 0;
+
+            for (let i = 0; i < xVals.length; i++) {
+                const yPred = slope * xVals[i] + intercept;
+                ssResidual += (yVals[i] - yPred) ** 2;
+                ssTotal += (yVals[i] - my) ** 2;
+            }
+
+            const r2 = 1 - (ssResidual / ssTotal);
+
+            // FINAL RESPONSE
+            res.json({
+                x: xVals,
+                y: yVals,
+                stats: {
+                    x: {
+                        sum: sum(xVals),
+                        mean: mx,
+                        variance: varX,
+                        stddev: stddev(xVals),
+                        min: Math.min(...xVals),
+                        max: Math.max(...xVals)
+                    },
+                    y: {
+                        sum: sum(yVals),
+                        mean: my,
+                        variance: variance(yVals),
+                        stddev: stddev(yVals),
+                        min: Math.min(...yVals),
+                        max: Math.max(...yVals)
+                    },
+                    covariance: covXY,
+                    regression: {
+                        slope: slope,
+                        intercept: intercept,
+                        r2: r2
+                    }
+                }
+            });
         });
     });
 });
+
 
 
 
