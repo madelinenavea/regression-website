@@ -61,10 +61,28 @@ function updateDropdowns() {
 	.catch(err => console.error("Error fetching columns:", err));
 }
 
-selectFile.addEventListener("select", () => {
+selectFile.addEventListener("change", () => {
 	console.log("Selected");
 	updateDropdowns();
 });
+
+function getColumns(fileName, x, y) {
+    return axios.get('/columns', {
+        params: {
+            fileName,  // match by name, server finds the GUID
+            x,
+            y
+        }
+    })
+    .then(res => {
+        console.log("Received columns:", res.data);
+        return res.data;
+    })
+    .catch(err => {
+        console.error("Error fetching 2 columns:", err);
+    });
+}
+
 
 
 
@@ -95,7 +113,10 @@ function plotCSV(containerId) {
 }
 
 // Use for reg-plot
-document.getElementById("reg-plot-button").addEventListener("click", () => plotCSV("reg-plot"));
+document.getElementById("reg-plot-button").addEventListener("click", () => {
+	let columns = getColumns(selectFile.value, sharedSelection.x, sharedSelection.y);
+	console.log(columns);
+});
 
 // Use for bell-plot
 document.getElementById("bell-plot-button").addEventListener("click", () => plotCSV("bell-plot"));

@@ -61,22 +61,23 @@ app.get('/Walmart_Sales.csv', (req, res) => {
 });
 
 app.get('/filenames', (req, res) => {
-  console.log("received");
 
-  const sessionID = req.sessionID; // prints correctly
+  // get users session ID
+  let sessionID = req.sessionID;
   if (!sessionID) return res.status(401).json({ error: 'No session ID' });
 
-  const dataPath = path.join(__dirname, 'public', 'data', 'user_files.json');
+  // set the path to the user_files.json
+  let dataPath = path.join(__dirname, 'public', 'data', 'user_files.json');
   console.log("Reading file:", dataPath);
 
+  // read the json file
   fs.readFile(dataPath, 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading data file:', err);
       return res.status(500).json({ error: 'Server error reading data' });
     }
 
-    console.log("File read successfully");
-
+    // try to parse the json. this should never brake
     let json;
     try {
       json = JSON.parse(data);
@@ -86,21 +87,124 @@ app.get('/filenames', (req, res) => {
       return res.status(500).json({ error: "Invalid JSON in user_files.json" });
     }
 
-    const user = json.users.find(u => u.sessionID === sessionID);
+    // find the user sessionID in the json file
+    let user = json.users.find(u => u.sessionID === sessionID);
     if (!user) {
       console.log("User not found for sessionID:", sessionID);
       return res.status(404).json({ error: 'User not found' });
     }
 
-    console.log("Found user:", user.sessionID);
-
-    const fileNames = (user.files || []).map(f => f.fileName); // <--- correct property
+    // collect all the file names that user uploaded
+    let fileNames = (user.files || []).map(f => f.fileName);
     console.log("File names:", fileNames);
 
+    // send
     res.json({ sessionID, files: fileNames });
-    console.log("Sent"); // ✅ This WILL run now if no errors
+    console.log("Sent");
   });
 });
+
+app.get("/file_columns", (req, res) => {
+    const fileName = req.query.fileName;
+    const filePath = path.join(__dirname, "public/data/user_files.json");
+
+    // Load the JSON file
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            console.error("Error reading user_files.json:", err);
+            return res.status(500).json({ error: "Server error" });
+        }
+        
+        console.log("JSON Loaded");
+        
+        const json = JSON.parse(data);
+        console.log("JSON Parsed");
+
+
+        // Find header list by fileName
+        let foundHeaders = null;
+        for (const user of json.users) {
+            for (const file of user.files) {
+                if (file.fileName === fileName) {
+                    foundHeaders = file.headers;
+                    break;
+                }
+            }
+            if (foundHeaders) break;
+        }
+
+        if (!foundHeaders) {
+            return res.status(404).json({ error: "File not found" });
+        }
+
+        console.log({ columns: foundHeaders });
+
+        res.json({ columns: foundHeaders });
+
+        console.log("Names Sent");
+
+    });
+});
+
+
+app.get('/columns', (req, res) => {
+    const fileName = req.query.fileName;
+    const xCol = req.query.x;
+    const yCol = req.query.y;
+
+    const jsonPath = path.join(__dirname, 'public/data/user_files.json');
+
+    fs.readFile(jsonPath, 'utf8', (err, userData) => {
+        if (err) return res.status(500).json({ error: "Unable to read metadata" });
+
+        const users = JSON.parse(userData).users;
+
+        // Find file by name and get its GUID
+        let guid = null;
+        let headers = null;
+        for (const user of users) {
+            for (const file of user.files) {
+                if (file.fileName === fileName) {
+                    guid = file.guid;
+                    headers = file.headers;
+                    break;
+                }
+            }
+            if (guid) break;
+        }
+
+        if (!guid)
+            return res.status(404).json({ error: "File not found" });
+
+        // Load CSV using GUID
+        const csvPath = path.join(__dirname, 'public/data', `${guid}.csv`);
+
+        fs.readFile(csvPath, 'utf8', (err, csvText) => {
+            if (err) return res.status(500).json({ error: "Cannot load CSV" });
+
+            const rows = csvText.split('\n').map(r => r.split(','));
+
+            const headerRow = rows[0];
+            const xIndex = headerRow.indexOf(xCol);
+            const yIndex = headerRow.indexOf(yCol);
+
+            if (xIndex === -1 || yIndex === -1)
+                return res.status(400).json({ error: "Column not found" });
+
+            const xVals = [];
+            const yVals = [];
+
+            for (let r = 1; r < rows.length; r++) {
+                xVals.push(rows[r][xIndex]);
+                yVals.push(rows[r][yIndex]);
+            }
+
+            res.json({ x: xVals, y: yVals });
+        });
+    });
+});
+
+
 
 
 app.post("/upload", upload.single("uploadedFile"), (req, res) => {
