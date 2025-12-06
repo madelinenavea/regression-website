@@ -63,7 +63,7 @@ function displayAnalysisResults(result) {
         // NG: If missing data exists, create an orange warning section
         html += `
             <div style="color: orange; margin: 10px 0;">
-                <h4>⚠️ Missing Data (${result.missingData.total} cells)</h4>
+                <h4>Missing Data (${result.missingData.total} cells)</h4>
                 <ul>
         `;
         // NG: Iterate through each missing data location and create list items
@@ -83,7 +83,7 @@ function displayAnalysisResults(result) {
         // NG: If duplicates exist, create a red warning section
         html += `
             <div style="color: red; margin: 10px 0;">
-                <h4>🔁 Duplicate Rows (${result.duplicateData.total} rows affected)</h4>
+                <h4>Duplicate Rows (${result.duplicateData.total} rows affected)</h4>
                 <p>Duplicate rows found at: ${result.duplicateData.rows.join(', ')}</p>
             </div>
         `;
@@ -98,7 +98,7 @@ function displayAnalysisResults(result) {
         <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ccc;">
             <h4>Summary</h4>
             <p><strong>Total Issues Found:</strong> ${result.summary.errorCount}</p>
-            <p><strong>File Status:</strong> ${result.summary.hasErrors ? '❌ Needs Review' : '✅ Clean'}</p>
+            <p><strong>File Status:</strong> ${result.summary.hasErrors ? 'Needs Review' : 'Clean'}</p>
         </div>
     </div>
     `;
@@ -199,7 +199,7 @@ function showOutlierDetectionOptions(result) {
     // Build HTML content for the outlier detection panel
     outlierSection.innerHTML = `
         <div style="border: 1px solid #007bff; padding: 15px; margin: 20px 0; border-radius: 5px; background: #f8f9fa;">
-            <h3>🔍 Outlier Detection</h3>
+            <h3>Outlier Detection</h3>
             <p>Detect unusual values in your data that may need attention.</p>
             
             <div style="margin: 15px 0;">
@@ -343,7 +343,7 @@ function displayAllOutlierResults(result) {
                 // Display column with outliers found (warning style)
                 html += `
                     <div style="margin: 15px 0; padding: 10px; border: 1px solid #ffc107; border-radius: 3px; background: #fffbf0;">
-                        <h4>⚠️ Column: "${column}" - ${analysis.outliers.length} outliers found</h4>
+                        <h4>Column: "${column}" - ${analysis.outliers.length} outliers found</h4>
                         <p><strong>Statistics:</strong> 
                             Mean: ${analysis.stats.mean.toFixed(2)}, 
                             Std Dev: ${analysis.stats.stdDev.toFixed(2)}, 
@@ -394,7 +394,7 @@ function displayColumnOutlierResults(result) {
             
             <!-- Display comprehensive statistics for the column -->
             <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 3px;">
-                <h4>📊 Column Statistics</h4>
+                <h4>Column Statistics</h4>
                 <p><strong>Total Values:</strong> ${result.stats.count}</p>
                 <p><strong>Mean:</strong> ${result.stats.mean.toFixed(2)}</p>
                 <p><strong>Standard Deviation:</strong> ${result.stats.stdDev.toFixed(2)}</p>
@@ -463,7 +463,7 @@ function showOutlierTreatmentOptions(column, strategy, outlierCount) {
     // Build treatment confirmation interface
     let html = `
         <div style="border: 1px solid #dc3545; padding: 15px; margin: 10px 0; border-radius: 5px; background: #f8d7da;">
-            <h3>🛠️ Outlier Treatment for "${column}"</h3>
+            <h3>Outlier Treatment for "${column}"</h3>
             <p><strong>Method:</strong> ${strategyNames[strategy]}</p>
             <p><strong>Description:</strong> ${strategyDescriptions[strategy]}</p>
             <p><strong>Outliers to treat:</strong> ${outlierCount} values</p>
@@ -482,11 +482,11 @@ function showOutlierTreatmentOptions(column, strategy, outlierCount) {
             <div style="margin-top: 20px;">
                 <button onclick="applyOutlierTreatment('${strategy}', '${column}')" 
                         style="background: #dc3545; color: white; border: none; padding: 10px 15px; border-radius: 3px; cursor: pointer; margin-right: 10px;">
-                    ✅ Apply Treatment
+                    Apply Treatment
                 </button>
                 <button onclick="history.back()" 
                         style="background: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 3px; cursor: pointer;">
-                    ❌ Cancel
+                    Cancel
                 </button>
             </div>
         </div>
@@ -584,11 +584,11 @@ function displayTreatmentResults(result) {
         <div style="margin-top: 20px;">
             <button onclick="handleDownloadTreatedData()" 
                     style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 3px; cursor: pointer; margin-right: 10px;">
-                💾 Download Treated Data
+                Download Treated Data
             </button>
             <button onclick="location.reload()" 
                     style="background: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 3px; cursor: pointer;">
-                📊 Analyze Another File
+                Analyze Another File
             </button>
         </div>
         </div>
