@@ -362,7 +362,7 @@ function displayAllOutlierResults(result) {
                 // Display column with no outliers found (success style)
                 html += `
                     <div style="margin: 10px 0; padding: 5px; color: green;">
-                        ✓ Column "${column}": No outliers found
+                        Column "${column}": No outliers found
                     </div>
                 `;
             }
@@ -472,7 +472,7 @@ function showOutlierTreatmentOptions(column, strategy, outlierCount) {
                 <p><strong>This will:</strong></p>
                 <ul>
                     ${strategy === 'winsorize' 
-                        ? '<li>Cap extreme values instead of removing them</li><li>Preserve all data points</li><li>Reduce impact of outliers</li>'
+                        ? '<li>Winsorizing caps the most extreme high and low numbers at chosen cut-offs instead of deleting them. This keeps all your data rows while stopping outliers from warping your results.</li><li>Preserve all data points</li><li>Reduce impact of outliers</li>'
                         : '<li>Remove outlier values (set to empty)</li><li>Keep the row structure intact</li><li>Eliminate extreme values</li>'
                     }
                 </ul>
@@ -542,7 +542,7 @@ async function applyOutlierTreatment(strategy, column) {
 function displayTreatmentResults(result) {
     let html = `
         <div style="border: 1px solid #28a745; padding: 15px; margin: 10px 0; border-radius: 5px; background: #d4edda;">
-            <h3>✅ Outlier Treatment Complete</h3>
+            <h3>Outlier Treatment Complete</h3>
             <p><strong>File:</strong> ${result.fileName}</p>
             <p><strong>Column:</strong> ${result.column}</p>
             <p><strong>Method:</strong> ${result.strategy}</p>
@@ -552,7 +552,7 @@ function displayTreatmentResults(result) {
     if (result.outliers.length > 0) {
         html += `
             <div style="margin: 15px 0;">
-                <h4>📋 Treated Values:</h4>
+                <h4>Treated Values:</h4>
                 <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: white;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
