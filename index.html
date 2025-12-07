@@ -170,9 +170,21 @@
     <select id="plot-y"></select>
     <button id="plot-scatter-btn">Plot Scatter Plot</button>
 
-    <div id="plot-output" style="margin-top:20px;"></div>
-    <div id="regression-table"></div>
-  </div>
+    <div class="row">
+      <div class="column" id="stats-container" style="margin-top:20px;">
+        <table id="stats-table">
+          <thead>
+            <tr>
+              <th>Statistic</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="column" id="plot-output" style="margin-top:20px;"></div>
+    </div>
+</div>
 
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
