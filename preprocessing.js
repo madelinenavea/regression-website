@@ -1,3 +1,9 @@
+
+
+
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
     let csvData = [];      // Store rows in file
     let columnNames = [];  // Store names of all columns
@@ -475,10 +481,37 @@ document.addEventListener("DOMContentLoaded", () => {
         Plotly.newPlot("plot-output", [{x:Object.keys(counts),y:Object.values(counts),type:"bar"}], {title:`Bar Chart of ${column}`});
     }
 
+    const mean = (arr) => arr.reduce((a,b) => a+b, 0) / arr.length;
+	const variance = (arr, mean) => arr.reduce((a,b) => a + Math.pow(b - mean, 2), 0) / arr.length;
+    
+    function covariance(x, y, meanX, meanY) {
+		let accumulator = 0;
+		for (let i = 0; i < x.length; i++) {
+			accumulator += (x[i] - meanX) * (y[i] - meanY);
+		}
+		return accumulator / x.length;
+	}
+
     function plotScatter(xCol, yCol) {
         const x = csvData.map(r=>parseFloat(r[xCol])).filter(v=>!isNaN(v));
         const y = csvData.map(r=>parseFloat(r[yCol])).filter(v=>!isNaN(v));
         Plotly.newPlot("plot-output", [{x,y,mode:"markers",type:"scatter"}], {title:`${xCol} vs ${yCol}`, xaxis:{title:xCol}, yaxis:{title:yCol}});
+        let meanOfX = mean(x);
+		let meanOfY = mean(y);
+		let slope = covariance(x, y, meanOfX, meanOfY) / variance(x, meanOfX);
+		let yInt = meanOfY - slope * meanOfX;
+
+		let maxX = Math.max(...x);
+		let minX = Math.min(...x);
+		console.log(maxX, minX, x, y, meanOfX, meanOfY, slope, yInt);
+
+		const bestFitLine = [{
+			x: [minX, maxX],
+			y: [slope*minX + yInt, slope*maxX + yInt],
+			type: 'scatter',
+            name: 'Best Fit Line'
+		}];
+		Plotly.plot("plot-output", bestFitLine);    
     }
 
     document.getElementById("plot-bar-btn").addEventListener("click", () => {
