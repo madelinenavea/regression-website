@@ -1,3 +1,9 @@
+
+
+
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
     let csvData = [];      // Store rows in file
     let columnNames = [];  // Store names of all columns
@@ -475,10 +481,83 @@ document.addEventListener("DOMContentLoaded", () => {
         Plotly.newPlot("plot-output", [{x:Object.keys(counts),y:Object.values(counts),type:"bar"}], {title:`Bar Chart of ${column}`});
     }
 
+    const mean = (arr) => arr.reduce((a,b) => a+b, 0) / arr.length;
+	const variance = (arr, mean) => arr.reduce((a,b) => a + Math.pow(b - mean, 2), 0) / arr.length;
+    
+    function covariance(x, y) {
+        let meanX = mean(x);
+        let meanY = mean(y);
+		let accumulator = 0;
+		for (let i = 0; i < x.length; i++) {
+			accumulator += (x[i] - meanX) * (y[i] - meanY);
+		}
+		return accumulator / x.length;
+	}
+
+    const stdDev = arr => {
+        const m = mean(arr);
+        return Math.sqrt(arr.reduce((a, b) => a + Math.pow(b - m, 2), 0) / arr.length);
+    };
+
+    const slope = (a, b) => covariance(a, b) / Math.pow(stdDev(a), 2);
+
+    const rSquared = (a, b) => {
+        const cov = covariance(a, b);
+        const sdA = stdDev(a);
+        const sdB = stdDev(b);
+        return Math.pow(cov / (sdA * sdB), 2);
+    };
+
     function plotScatter(xCol, yCol) {
         const x = csvData.map(r=>parseFloat(r[xCol])).filter(v=>!isNaN(v));
         const y = csvData.map(r=>parseFloat(r[yCol])).filter(v=>!isNaN(v));
         Plotly.newPlot("plot-output", [{x,y,mode:"markers",type:"scatter"}], {title:`${xCol} vs ${yCol}`, xaxis:{title:xCol}, yaxis:{title:yCol}});
+        let meanOfX = mean(x);
+		let meanOfY = mean(y);
+		let slope = covariance(x, y) / variance(x, meanOfX);
+		let yInt = meanOfY - slope * meanOfX;
+
+		let maxX = Math.max(...x);
+		let minX = Math.min(...x);
+		console.log(maxX, minX, x, y, meanOfX, meanOfY, slope, yInt);
+
+		const bestFitLine = [{
+			x: [minX, maxX],
+			y: [slope*minX + yInt, slope*maxX + yInt],
+			type: 'scatter',
+            name: 'Best Fit Line'
+		}];
+		Plotly.plot("plot-output", bestFitLine);    
+    }
+
+    function fillStatsTree(xCol, yCol) {
+        const x = csvData.map(r=>parseFloat(r[xCol])).filter(v=>!isNaN(v));
+        const y = csvData.map(r=>parseFloat(r[yCol])).filter(v=>!isNaN(v));
+        let stats = {
+            "Col X Min": Math.min(...x),
+            "Col X Max": Math.max(...x),
+            "Col X Mean": mean(x),
+            "Col X Std Dev": stdDev(x),
+            "Col Y Min": Math.min(...y),
+            "Col Y Max": Math.max(...y),
+            "Col Y Mean": mean(y),
+            "Col Y Std Dev": stdDev(y),
+            "Covariance": covariance(x, y, mean(x), mean(y)),
+            "Slope": slope(x, y),
+            "R^2": rSquared(x, y),
+            "Total X": x.reduce((a, b) => a + b, 0),
+            "Total Y": y.reduce((a, b) => a + b, 0)
+        };
+        let tbody = document.querySelector("#stats-table tbody");
+
+        // Clear old rows before repopulating
+        tbody.innerHTML = "";("#stats-table tbody");
+
+        Object.entries(stats).forEach(([key, value]) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${key}</td><td>${value.toFixed ? value.toFixed(4) : value}</td>`;
+            tbody.appendChild(row);
+        });
     }
 
     document.getElementById("plot-bar-btn").addEventListener("click", () => {
@@ -489,5 +568,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const x = document.getElementById("plot-x").value;
         const y = document.getElementById("plot-y").value;
         plotScatter(x, y);
+        fillStatsTree(x, y);
     });
 });
