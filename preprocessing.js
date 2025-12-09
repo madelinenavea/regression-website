@@ -464,6 +464,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const barSelect = document.getElementById("plot-bar-column");
         const xSelect = document.getElementById("plot-x");
         const ySelect = document.getElementById("plot-y");
+        const lineXSelect = document.getElementById("line-x");
+        const lineYSelect = document.getElementById("line-y");
+        
         [barSelect,xSelect,ySelect].forEach(s=>s.innerHTML="");
         columns.forEach(col=>{
             const opt1 = document.createElement("option");
@@ -471,6 +474,8 @@ document.addEventListener("DOMContentLoaded", () => {
             barSelect.appendChild(opt1);
             xSelect.appendChild(opt1.cloneNode(true));
             ySelect.appendChild(opt1.cloneNode(true));
+            lineXSelect.appendChild(opt1.cloneNode(true));
+            lineYSelect.appendChild(opt1.cloneNode(true));
         });
     }
 
@@ -511,7 +516,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function plotScatter(xCol, yCol) {
         const x = csvData.map(r=>parseFloat(r[xCol])).filter(v=>!isNaN(v));
         const y = csvData.map(r=>parseFloat(r[yCol])).filter(v=>!isNaN(v));
-        Plotly.newPlot("plot-output", [{x,y,mode:"markers",type:"scatter"}], {title:`${xCol} vs ${yCol}`, xaxis:{title:xCol}, yaxis:{title:yCol}});
+        Plotly.newPlot("plot-output", [{x,y,mode:"markers",type:"scatter",name:"Data"}], {title:`${xCol} vs ${yCol}`, xaxis:{title:xCol}, yaxis:{title:yCol}}); 
+    }
+
+    function plotLine(xCol, yCol) {
+        const x = csvData.map(r=>parseFloat(r[xCol])).filter(v=>!isNaN(v));
+        const y = csvData.map(r=>parseFloat(r[yCol])).filter(v=>!isNaN(v));
         let meanOfX = mean(x);
 		let meanOfY = mean(y);
 		let slope = covariance(x, y) / variance(x, meanOfX);
@@ -527,12 +537,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			type: 'scatter',
             name: 'Best Fit Line'
 		}];
-		Plotly.plot("plot-output", bestFitLine);    
+		Plotly.newPlot("plot-output", bestFitLine);    
     }
 
     function fillStatsTree(xCol, yCol) {
-        const x = csvData.map(r=>parseFloat(r[xCol])).filter(v=>!isNaN(v));
-        const y = csvData.map(r=>parseFloat(r[yCol])).filter(v=>!isNaN(v));
+        const x = csvData.map(r => parseFloat(r[xCol])).filter(v => !isNaN(v));
+        const y = csvData.map(r => parseFloat(r[yCol])).filter(v => !isNaN(v));
+
         let stats = {
             "Col X Min": Math.min(...x),
             "Col X Max": Math.max(...x),
@@ -548,16 +559,32 @@ document.addEventListener("DOMContentLoaded", () => {
             "Total X": x.reduce((a, b) => a + b, 0),
             "Total Y": y.reduce((a, b) => a + b, 0)
         };
-        let tbody = document.querySelector("#stats-table tbody");
 
-        // Clear old rows before repopulating
-        tbody.innerHTML = "";("#stats-table tbody");
+        const table = document.querySelector("#stats-table");
+        const thead = table.querySelector("thead");
+        const tbody = table.querySelector("tbody");
 
-        Object.entries(stats).forEach(([key, value]) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${key}</td><td>${value.toFixed ? value.toFixed(4) : value}</td>`;
-            tbody.appendChild(row);
+        // Clear old content
+        thead.innerHTML = "";
+        tbody.innerHTML = "";
+
+        // Create header row (stat names)
+        const headerRow = document.createElement("tr");
+        Object.keys(stats).forEach(key => {
+            const th = document.createElement("th");
+            th.textContent = key;
+            headerRow.appendChild(th);
         });
+        thead.appendChild(headerRow);
+
+        // Create value row
+        const valueRow = document.createElement("tr");
+        Object.values(stats).forEach(value => {
+            const td = document.createElement("td");
+            td.textContent = (value.toFixed ? value.toFixed(4) : value);
+            valueRow.appendChild(td);
+        });
+        tbody.appendChild(valueRow);
     }
 
     document.getElementById("plot-bar-btn").addEventListener("click", () => {
@@ -570,4 +597,10 @@ document.addEventListener("DOMContentLoaded", () => {
         plotScatter(x, y);
         fillStatsTree(x, y);
     });
+    document.getElementById("line-plot-button").addEventListener("click", () => {
+        const x = document.getElementById("line-x").value;
+        const y = document.getElementById("line-y").value;
+        plotLine(x, y);
+        fillStatsTree(x, y);
+    })
 });

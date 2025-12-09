@@ -103,6 +103,18 @@
     button {
       margin-top: 5px;
     }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .box {
+      display: inline-block;  /* keeps natural width */
+      border: 1px solid #ccc;
+      padding: 20px;
+    }
   </style>
 </head>
 
@@ -157,33 +169,50 @@
   <div id="plot-section">
     <h3>Data Visualization</h3>
 
-    <label>Select Column (Categorical / Bar Plot)</label>
-    <select id="plot-bar-column"></select>
-    <button id="plot-bar-btn">Plot Bar Chart</button>
+      <div class="container">
 
-    <br><br>
+    <div class="box">
+      <label>Select Column (Categorical / Bar Plot)</label>
+      <select id="plot-bar-column"></select>
+      <button id="plot-bar-btn">Plot Bar Chart</button>
 
-    <label>X-axis:</label>
-    <select id="plot-x"></select>
+      <br><br>
 
-    <label>Y-axis:</label>
-    <select id="plot-y"></select>
-    <button id="plot-scatter-btn">Plot Scatter Plot</button>
+      <label>X-axis:</label>
+      <select id="plot-x"></select>
 
-    <div class="row">
-      <div class="column" id="stats-container" style="margin-top:20px;">
+      <label>Y-axis:</label>
+      <select id="plot-y"></select>
+      <button id="plot-scatter-btn">Plot Scatter Plot</button>
+
+      <br><br>
+
+      <label>X-axis:</label>
+      <select id="line-x"></select>
+
+      <label>Y-axis:</label>
+      <select id="line-y"></select>
+      <button id="line-plot-button">Show Line Plot</button>
+    </div>
+
+    <div class="box">
+      <h3>Regressions Table</h3>
+      <div id="stats-container" style="margin-top:20px;">
         <table id="stats-table">
           <thead>
             <tr>
-              <th>Statistic</th>
-              <th>Value</th>
+              <th></th>
+              <th></th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
-      <div class="column" id="plot-output" style="margin-top:20px;"></div>
     </div>
+  </div>
+
+  <div id="plot-output" style="margin-top:20px;"></div>
+    
 </div>
 
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
